@@ -1,66 +1,74 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import ReportIcon from '@mui/icons-material/Report';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import SchoolIcon from '@mui/icons-material/School';
 
-export default function Dashboard() {
+export default function AdminDash() {
   const modules = [
     {
-      title: "Election",
-      path: "/election",
+      title: "Election Management",
+      path: "/election-management",
       icon: <HowToVoteIcon className="text-white text-2xl" />,
       bgColor: "bg-[#FFE4BA]",
       iconBg: "bg-[#FF8A00]"
     },
     {
-      title: "Facility Booking",
-      path: "/facility-booking",
-      icon: <CalendarMonthIcon className="text-white text-2xl" />,
+      title: "Complaint Review",
+      path: "/complaint-review",
+      icon: <ReportIcon className="text-white text-2xl" />,
+      bgColor: "bg-[#B8D8BA]",
+      iconBg: "bg-[#4A7B4C]"
+    },
+    {
+      title: "Facility Booking Request",
+      path: "/facility-booking-request",
+      icon: <AssignmentIcon className="text-white text-2xl" />,
+      bgColor: "bg-[#FFD6D6]",
+      iconBg: "bg-[#FF4D4D]"
+    },
+    {
+      title: "Budge & Fund Administration",
+      path: "/budget-admin",
+      icon: <AccountBalanceWalletIcon className="text-white text-2xl" />,
       bgColor: "bg-[#D4E6F1]",
       iconBg: "bg-[#2E86C1]"
     },
     {
-      title: "Complaints",
-      path: "/complaints",
-      icon: <ReportIcon className="text-white text-2xl" />,
-      bgColor: "bg-[#FADBD8]",
-      iconBg: "bg-[#E74C3C]"
-    },
-    {
-      title: "Application",
-      path: "/application",
-      icon: <AddCircleIcon className="text-white text-2xl" />,
+      title: "Event & Budget Management",
+      path: "/event-management",
+      icon: <EventNoteIcon className="text-white text-2xl" />,
       bgColor: "bg-[#E8DAEF]",
       iconBg: "bg-[#8E44AD]"
     },
     {
-      title: "Budget Tracking",
-      path: "/budget",
-      icon: <AccountBalanceWalletIcon className="text-white text-2xl" />,
-      bgColor: "bg-[#D5F5E3]",
-      iconBg: "bg-[#27AE60]"
-    },
-    {
-      title: "Academic Integrity",
+      title: "Academic Integrity Record",
       path: "/academic-integrity",
       icon: <VerifiedUserIcon className="text-white text-2xl" />,
       bgColor: "bg-[#FCF3CF]",
       iconBg: "bg-[#F1C40F]"
+    },
+    {
+      title: "Health & Leave Notification",
+      path: "/health-leave",
+      icon: <LocalHospitalIcon className="text-white text-2xl" />,
+      bgColor: "bg-[#FADBD8]",
+      iconBg: "bg-[#E74C3C]"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
+    <div className="min-h-screen bg-gray-100">
+      {/* Header - Better mobile optimization */}
       <header className="bg-gradient-to-r from-blue-200 to-blue-300 p-3 sm:p-4">
         <div className="container mx-auto">
           {/* Top row with logo and title - Always visible */}
@@ -76,7 +84,9 @@ export default function Dashboard() {
             
             {/* Icons for mobile - Right aligned */}
             <div className="flex items-center gap-3 sm:gap-6">
-              <HomeIcon className="text-black text-xl sm:text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
+              <Link to="/dashboard">
+                <HomeIcon className="text-black text-xl sm:text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
+              </Link>
               <div className="relative">
                 <NotificationsIcon className="text-black text-xl sm:text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
                 <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
@@ -89,7 +99,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Search Bar */}
+      {/* Search Bar - Better mobile optimization */}
       <div className="container mx-auto mt-4 sm:mt-8 px-3 sm:px-4">
         <div className="relative w-full max-w-2xl mx-auto">
           <input
@@ -101,27 +111,30 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Modules Grid - Smaller cards */}
+      {/* Modules Grid - Better mobile optimization */}
       <div className="container mx-auto mt-4 sm:mt-8 px-2 sm:px-4 pb-6 sm:pb-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5 max-w-4xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6 max-w-6xl mx-auto">
           {modules.map((module, index) => (
             <Link 
               key={index}
               to={module.path} 
-              className={`${module.bgColor} rounded-lg p-2 sm:p-3.5 flex flex-col items-center justify-center hover:shadow-lg transition-all hover:-translate-y-1 sm:hover:scale-102 active:scale-95 h-[100px] sm:h-[130px]`}
+              className={`${module.bgColor} rounded-lg p-2.5 sm:p-4 flex flex-col items-center hover:shadow-lg transition-all hover:-translate-y-1 w-full`}
             >
-              <div className={`${module.iconBg} p-1.5 sm:p-2.5 rounded-full mb-1.5 sm:mb-2`}>
+              <div className={`${module.iconBg} p-2 sm:p-3 rounded-full mb-2 sm:mb-3`}>
                 {React.cloneElement(module.icon, {
-                  className: "text-white text-base sm:text-xl"
+                  className: "text-white text-lg sm:text-2xl"
                 })}
               </div>
-              <h2 className="text-xs sm:text-sm font-medium text-black text-center leading-tight px-1">
+              <h2 className="text-xs sm:text-base font-medium text-black text-center leading-tight px-1">
                 {module.title}
               </h2>
             </Link>
           ))}
         </div>
       </div>
+
+      {/* This will render the nested routes */}
+      <Outlet />
     </div>
   );
-}
+} 
