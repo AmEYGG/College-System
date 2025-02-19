@@ -61,6 +61,7 @@ export default function Login() {
                 <option value="admin">Admin</option>
                 <option value="faculty">Faculty</option>
                 <option value="student">Student</option>
+                <option value="student">Doctor</option>
               </select>
               <ArrowDropDownIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black/70 text-2xl pointer-events-none" />
             </div>

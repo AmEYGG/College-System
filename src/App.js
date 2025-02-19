@@ -6,6 +6,7 @@ import Registration from './components/Registration';
 import ForgotScreen from './components/ForgotScreen';
 import ElectionScreen from './components/ElectionScreen';
 import AdminDash from './components/AdminDash';
+import DoctorDash from './components/DoctorDash';
 import ComplaintInfo from './components/ComplaintInfo';
 import ApplicationInfo from './components/ApplicationInfo';
 import BookingForm from './components/BookingForm';
@@ -34,6 +35,9 @@ function App() {
         <Route path="/academic-integrity" element={<div>Academic Integrity Page</div>} />
         <Route path="/forgot-password" element={<ForgotScreen />} />
         <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route path="/doctor-dashboard" element={<DoctorDash />} />
+        <Route path="/add-patient" element={<HealthForm />} />
+        <Route path="/view-patients" element={<div>View Patients Page</div>} />
       </Routes>
     </Router>
   );

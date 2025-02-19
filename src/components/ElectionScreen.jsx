@@ -2,11 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import PollIcon from '@mui/icons-material/Poll';
 import SchoolIcon from '@mui/icons-material/School';
+import ProfileMenu from './common/ProfileMenu';
 
 export default function ElectionScreen() {
   return (
@@ -24,10 +24,11 @@ export default function ElectionScreen() {
             <Link to="/dashboard">
               <HomeIcon className="text-black text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
             </Link>
-            <NotificationsIcon className="text-black text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
-            <div className="bg-blue-500 rounded-full p-2 cursor-pointer hover:bg-blue-600 transition-colors">
-              <AccountCircleIcon className="text-white text-2xl" />
+            <div className="relative">
+              <NotificationsIcon className="text-black text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
+              <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
             </div>
+            <ProfileMenu />
           </div>
         </div>
       </header>
