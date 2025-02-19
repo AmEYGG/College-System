@@ -46,7 +46,7 @@ export default function ElectionScreen() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-4xl mx-auto">
           {/* Registration Form Card */}
           <Link 
-            to="/election/registration" 
+            to="/election/register" 
             className="bg-[#FFE4BA] rounded-xl p-6 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1 max-w-[250px] mx-auto w-full"
           >
             <div className="bg-[#FF8A00] p-3 rounded-full mb-3">

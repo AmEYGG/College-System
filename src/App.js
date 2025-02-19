@@ -5,6 +5,12 @@ import Dashboard from './components/Dashboard';
 import Registration from './components/Registration';
 import ForgotScreen from './components/ForgotScreen';
 import ElectionScreen from './components/ElectionScreen';
+import AdminDash from './components/AdminDash';
+import ComplaintInfo from './components/ComplaintInfo';
+import ApplicationInfo from './components/ApplicationInfo';
+import BookingForm from './components/BookingForm';
+import LeaveForm from './components/LeaveForm';
+import HealthForm from './components/HealthForm';
 
 // Create and export the UserContext
 export const UserContext = createContext();
@@ -18,12 +24,16 @@ function App() {
         <Route path="/register" element={<Registration />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/election" element={<ElectionScreen />} />
-        <Route path="/facility-booking" element={<div>Facility Booking Page</div>} />
-        <Route path="/complaints" element={<div>Complaints Page</div>} />
-        <Route path="/application" element={<div>Application Page</div>} />
+        <Route path="/election/register" element={<Registration />} />
+        <Route path="/facility-booking" element={<BookingForm />} />
+        <Route path="/complaints" element={<ComplaintInfo />} />
+        <Route path="/application" element={<ApplicationInfo />} />
+        <Route path="/application/leave" element={<LeaveForm />} />
+        <Route path="/application/health" element={<HealthForm />} />
         <Route path="/budget" element={<div>Budget Tracking Page</div>} />
         <Route path="/academic-integrity" element={<div>Academic Integrity Page</div>} />
         <Route path="/forgot-password" element={<ForgotScreen />} />
+        <Route path="/admin-dashboard" element={<AdminDash />} />
       </Routes>
     </Router>
   );
