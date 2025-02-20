@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SchoolIcon from '@mui/icons-material/School';
 import PersonIcon from '@mui/icons-material/Person';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -10,6 +9,7 @@ import EventIcon from '@mui/icons-material/Event';
 import SubjectIcon from '@mui/icons-material/Subject';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import MedicationIcon from '@mui/icons-material/Medication';
+import ProfileMenu from './common/ProfileMenu';
 
 export default function HealthForm() {
   const [formData, setFormData] = useState({
@@ -25,8 +25,11 @@ export default function HealthForm() {
     emergencyContact: '',
     hostelStudent: 'no',
     consultedDoctor: 'no',
-    severity: 'mild'
+    severity: 'mild',
+    medicalCertificate: null
   });
+
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,11 +37,34 @@ export default function HealthForm() {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, type, files } = e.target;
+    
+    if (type === 'file') {
+      const file = files[0];
+      setFormData(prev => ({
+        ...prev,
+        medicalCertificate: file
+      }));
+      
+      if (file) {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-red-100 flex flex-col">
@@ -63,9 +89,7 @@ export default function HealthForm() {
                 <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
                 <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-1.5 h-1.5"></span>
               </div>
-              <div className="bg-blue-500 rounded-full p-1 cursor-pointer hover:bg-blue-600 transition-colors">
-                <AccountCircleIcon className="text-white text-xl" />
-              </div>
+              <ProfileMenu />
             </div>
           </div>
         </div>
@@ -74,11 +98,9 @@ export default function HealthForm() {
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center gap-2 text-gray-600">
-          <Link to="/dashboard" className="hover:text-blue-500">Home</Link>
+          <Link to="/doctor-dashboard" className="hover:text-blue-500">Doctor Dashboard</Link>
           <span>/</span>
-          <Link to="/application" className="hover:text-blue-500">Applications</Link>
-          <span>/</span>
-          <span className="text-black">Health Report</span>
+          <span className="text-black">Add Patient</span>
         </div>
       </div>
 
@@ -88,10 +110,10 @@ export default function HealthForm() {
           {/* Form Header */}
           <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-5">
             <h2 className="text-2xl font-bold text-white text-center tracking-wide">
-              Student Health Report Form
+              Add New Patient
             </h2>
             <p className="text-red-100 text-center mt-1 text-sm">
-              This form will be sent to your class coordinator
+              Enter patient health details
             </p>
           </div>
 
@@ -345,6 +367,62 @@ export default function HealthForm() {
                 </div>
               </div>
 
+              {/* Add Medical Certificate Upload Section */}
+              <div className="p-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Medical Certificate</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PDF, PNG, or JPG (MAX. 2MB)</p>
+                      </div>
+                      <input 
+                        type="file" 
+                        name="medicalCertificate"
+                        onChange={handleChange}
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Preview Section */}
+                  {previewUrl && (
+                    <div className="relative p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">
+                          {formData.medicalCertificate?.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, medicalCertificate: null }));
+                            setPreviewUrl(null);
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      {formData.medicalCertificate?.type.includes('image') && (
+                        <img 
+                          src={previewUrl} 
+                          alt="Certificate Preview" 
+                          className="mt-2 max-h-40 rounded-lg mx-auto"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Submit Button */}
               <div className="pt-4">
                 <button
@@ -354,7 +432,7 @@ export default function HealthForm() {
                     focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 
                     shadow-lg hover:shadow-xl active:shadow-md"
                 >
-                  Submit Health Report
+                  Add Patient
                 </button>
               </div>
             </form>
@@ -363,7 +441,7 @@ export default function HealthForm() {
             <div className="mt-6 text-center space-y-2">
               <div className="bg-red-50 rounded-xl p-4 text-sm text-red-600">
                 <p className="font-medium">Important Note:</p>
-                <p>Your class coordinator will be notified immediately.</p>
+                <p>Patient records will be stored securely.</p>
                 <p>Please ensure all medical details are accurate.</p>
               </div>
             </div>

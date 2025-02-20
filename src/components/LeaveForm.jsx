@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SchoolIcon from '@mui/icons-material/School';
 import PersonIcon from '@mui/icons-material/Person';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EventIcon from '@mui/icons-material/Event';
 import SubjectIcon from '@mui/icons-material/Subject';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ProfileMenu from './common/ProfileMenu';
 
 export default function LeaveForm() {
   const [formData, setFormData] = useState({
@@ -59,9 +59,7 @@ export default function LeaveForm() {
                 <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
                 <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-1.5 h-1.5"></span>
               </div>
-              <div className="bg-blue-500 rounded-full p-1 cursor-pointer hover:bg-blue-600 transition-colors">
-                <AccountCircleIcon className="text-white text-xl" />
-              </div>
+              <ProfileMenu />
             </div>
           </div>
         </div>

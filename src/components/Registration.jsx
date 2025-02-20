@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SchoolIcon from '@mui/icons-material/School';
+import ProfileMenu from './common/ProfileMenu';
 
 export default function Registration() {
   const navigate = useNavigate();
@@ -100,8 +100,16 @@ export default function Registration() {
               <Link to="/dashboard">
                 <HomeIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
               </Link>
+<<<<<<< HEAD
               <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
               <AccountCircleIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
+=======
+              <div className="relative">
+                <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
+                <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-1.5 h-1.5"></span>
+              </div>
+              <ProfileMenu />
+>>>>>>> afbfa6377a713866e9750d4c09a9f10cd589cafc
             </div>
           </div>
         </div>
