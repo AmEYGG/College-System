@@ -98,11 +98,9 @@ export default function HealthForm() {
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center gap-2 text-gray-600">
-          <Link to="/dashboard" className="hover:text-blue-500">Home</Link>
+          <Link to="/doctor-dashboard" className="hover:text-blue-500">Doctor Dashboard</Link>
           <span>/</span>
-          <Link to="/application" className="hover:text-blue-500">Applications</Link>
-          <span>/</span>
-          <span className="text-black">Health Report</span>
+          <span className="text-black">Add Patient</span>
         </div>
       </div>
 
@@ -112,10 +110,10 @@ export default function HealthForm() {
           {/* Form Header */}
           <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-5">
             <h2 className="text-2xl font-bold text-white text-center tracking-wide">
-              Student Health Report Form
+              Add New Patient
             </h2>
             <p className="text-red-100 text-center mt-1 text-sm">
-              This form will be sent to your class coordinator
+              Enter patient health details
             </p>
           </div>
 
@@ -434,7 +432,7 @@ export default function HealthForm() {
                     focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 
                     shadow-lg hover:shadow-xl active:shadow-md"
                 >
-                  Submit Health Report
+                  Add Patient
                 </button>
               </div>
             </form>
@@ -443,7 +441,7 @@ export default function HealthForm() {
             <div className="mt-6 text-center space-y-2">
               <div className="bg-red-50 rounded-xl p-4 text-sm text-red-600">
                 <p className="font-medium">Important Note:</p>
-                <p>Your class coordinator will be notified immediately.</p>
+                <p>Patient records will be stored securely.</p>
                 <p>Please ensure all medical details are accurate.</p>
               </div>
             </div>

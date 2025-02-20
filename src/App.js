@@ -12,6 +12,7 @@ import ApplicationInfo from './components/ApplicationInfo';
 import BookingForm from './components/BookingForm';
 import LeaveForm from './components/LeaveForm';
 import HealthForm from './components/HealthForm';
+import ViewPatients from './components/ViewPatients';
 
 // Create and export the UserContext
 export const UserContext = createContext();
@@ -30,14 +31,13 @@ function App() {
         <Route path="/complaints" element={<ComplaintInfo />} />
         <Route path="/application" element={<ApplicationInfo />} />
         <Route path="/application/leave" element={<LeaveForm />} />
-        <Route path="/application/health" element={<HealthForm />} />
         <Route path="/budget" element={<div>Budget Tracking Page</div>} />
         <Route path="/academic-integrity" element={<div>Academic Integrity Page</div>} />
         <Route path="/forgot-password" element={<ForgotScreen />} />
         <Route path="/admin-dashboard" element={<AdminDash />} />
         <Route path="/doctor-dashboard" element={<DoctorDash />} />
-        <Route path="/add-patient" element={<HealthForm />} />
-        <Route path="/view-patients" element={<div>View Patients Page</div>} />
+        <Route path="/doctor-dashboard/add-patient" element={<HealthForm />} />
+        <Route path="/doctor-dashboard/view-patients" element={<ViewPatients />} />
       </Routes>
     </Router>
   );

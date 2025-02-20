@@ -40,8 +40,6 @@ export default function DoctorDash() {
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center gap-2 text-gray-600">
-          <Link to="/dashboard" className="hover:text-blue-500">Home</Link>
-          <span>/</span>
           <span className="text-black">Doctor Dashboard</span>
         </div>
       </div>
@@ -51,7 +49,7 @@ export default function DoctorDash() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Add Patient Card */}
           <Link 
-            to="/add-patient" 
+            to="/doctor-dashboard/add-patient"
             className="bg-[#FFE4BA] rounded-xl p-6 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1 w-full"
           >
             <div className="bg-[#FF8A00] p-3 rounded-full mb-3">
@@ -63,7 +61,7 @@ export default function DoctorDash() {
 
           {/* View Patients Card */}
           <Link 
-            to="/view-patients" 
+            to="/doctor-dashboard/view-patients"
             className="bg-[#FFE4BA] rounded-xl p-6 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1 w-full"
           >
             <div className="bg-[#FF8A00] p-3 rounded-full mb-3">
