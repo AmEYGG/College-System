@@ -22,6 +22,7 @@ export default function LeaveForm() {
     visitPlace: '',
     parentInformed: 'no'
   });
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,6 +35,10 @@ export default function LeaveForm() {
       ...formData,
       [e.target.name]: value
     });
+  };
+
+  const toggleNotificationPanel = () => {
+    setIsNotificationOpen(prev => !prev);
   };
 
   return (
@@ -56,8 +61,16 @@ export default function LeaveForm() {
                 <HomeIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
               </Link>
               <div className="relative">
-                <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
-                <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-1.5 h-1.5"></span>
+                <NotificationsIcon 
+                  className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" 
+                  onClick={toggleNotificationPanel} 
+                />
+                {isNotificationOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-4">
+                    <h3 className="font-bold">Notifications</h3>
+                    <p>No new notifications</p>
+                  </div>
+                )}
               </div>
               <ProfileMenu />
             </div>

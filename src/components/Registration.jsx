@@ -20,6 +20,7 @@ export default function Registration() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +33,6 @@ export default function Registration() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-<<<<<<< HEAD
       if (file.size > 5000000) { // 5MB limit
         alert('File is too large. Please choose an image under 5MB.');
         return;
@@ -41,28 +41,14 @@ export default function Registration() {
         alert('Please upload an image file.');
         return;
       }
-      setFormData(prev => ({
-        ...prev,
-        photo: file
-      }));
 
-      // Show preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        const previewImg = document.getElementById('photoPreview');
-        if (previewImg) {
-          previewImg.src = reader.result;
-          previewImg.style.display = 'block';
-        }
-=======
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({
+        setFormData(prev => ({
           ...prev,
           photo: file,
-          photoPreview: reader.result,
+          photoPreview: reader.result
         }));
->>>>>>> f9c3f9829949cae2109e0be7b5e8015653ed92fc
       };
       reader.readAsDataURL(file);
     }
@@ -70,19 +56,23 @@ export default function Registration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-<<<<<<< HEAD
-    
-    // Convert photo to base64 string before saving
-    const reader = new FileReader();
-    reader.onloadend = () => {
+    setError('');
+    setLoading(true);
+
+    if (!formData.fullName || !formData.email || !formData.department || !formData.year || !formData.position) {
+      setError('Please fill all required fields');
+      setLoading(false);
+      return;
+    }
+
+    try {
       // Create candidate object with base64 image
       const newCandidate = {
         id: Date.now(),
         name: formData.fullName,
         department: formData.department,
         collegeYear: formData.year,
-        // Use the uploaded photo if available, otherwise use default
-        image: reader.result || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop",
+        image: formData.photoPreview || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop",
         about: formData.additionalDetails,
         position: formData.position
       };
@@ -101,49 +91,15 @@ export default function Registration() {
       
       // Navigate to voting page
       navigate('/election/voting');
-    };
-
-    if (formData.photo) {
-      reader.readAsDataURL(formData.photo);
-    } else {
-      // Trigger onloadend even without a file
-      reader.onloadend();
-=======
-    setError('');
-    setLoading(true);
-
-    if (!formData.fullName || !formData.email || !formData.department || !formData.year || !formData.position || !formData.photo) {
-      setError('Please fill all required fields and upload a photo.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (key !== 'photoPreview') {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
-
-      const response = await fetch('http://localhost:5000/api/registerCandidate', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong!');
-      }
-
-      alert('Registration successful!');
-      navigate('/election');
     } catch (error) {
-      setError(error.message);
+      setError(error.message || 'Something went wrong!');
     } finally {
       setLoading(false);
->>>>>>> f9c3f9829949cae2109e0be7b5e8015653ed92fc
     }
+  };
+
+  const toggleNotificationPanel = () => {
+    setIsNotificationOpen(prev => !prev);
   };
 
   return (
@@ -164,20 +120,35 @@ export default function Registration() {
               <Link to="/dashboard">
                 <HomeIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
               </Link>
-<<<<<<< HEAD
-              <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
-              <AccountCircleIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
-=======
               <div className="relative">
-                <NotificationsIcon className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" />
+                <NotificationsIcon 
+                  className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" 
+                  onClick={toggleNotificationPanel} 
+                />
                 <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-1.5 h-1.5"></span>
+                {isNotificationOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-4">
+                    <h3 className="font-bold">Notifications</h3>
+                    <p>No new notifications</p>
+                    {/* Add more notification items here */}
+                  </div>
+                )}
               </div>
               <ProfileMenu />
->>>>>>> afbfa6377a713866e9750d4c09a9f10cd589cafc
             </div>
           </div>
         </div>
       </header>
+
+      <div className="container mx-auto px-3 py-2 sm:px-4 sm:py-4">
+        <div className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base text-gray-600">
+          <Link to="/dashboard" className="hover:text-blue-500">Home</Link>
+          <span>/</span>
+          <Link to="/election" className="hover:text-blue-500">Election</Link>
+          <span>/</span>
+          <span className="text-black">Register</span>
+        </div>
+      </div>
 
       <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -189,105 +160,107 @@ export default function Registration() {
           <form onSubmit={handleSubmit} className="p-10 space-y-6">
             {error && <p className="text-red-500 text-center">{error}</p>}
 
-            <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Full Name" required className="w-full p-3 bg-gray-100 rounded-lg"/>
-            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="E-mail" required className="w-full p-3 bg-gray-100 rounded-lg"/>
-            
-            <select name="department" value={formData.department} onChange={handleChange} required className="w-full p-3 bg-gray-100 rounded-lg">
-              <option value="" disabled>Select Department</option>
-              <option value="cse">Computer Science</option>
-              <option value="it">Information Technology</option>
-              <option value="mech">Mechanical</option>
-              <option value="civil">Civil</option>
-            </select>
-            
-            <select name="year" value={formData.year} onChange={handleChange} required className="w-full p-3 bg-gray-100 rounded-lg">
-              <option value="" disabled>Select Year</option>
-              <option value="1">First Year</option>
-              <option value="2">Second Year</option>
-              <option value="3">Third Year</option>
-              <option value="4">Fourth Year</option>
-            </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <input 
+                type="text" 
+                name="fullName" 
+                value={formData.fullName} 
+                onChange={handleChange} 
+                placeholder="Full Name" 
+                required 
+                className="w-full p-3 bg-[#A9C1D1] rounded-lg text-black placeholder-gray-700 font-medium"
+              />
+              <input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                placeholder="E-mail" 
+                required 
+                className="w-full p-3 bg-[#A9C1D1] rounded-lg text-black placeholder-gray-700 font-medium"
+              />
+            </div>
 
-            <select name="position" value={formData.position} onChange={handleChange} required className="w-full p-3 bg-gray-100 rounded-lg">
-              <option value="" disabled>Select Position</option>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <select 
+                name="department" 
+                value={formData.department} 
+                onChange={handleChange} 
+                required 
+                className="w-full p-3 bg-[#A9C1D1] rounded-lg text-black font-medium"
+              >
+                <option value="" disabled className="text-gray-700">Select Department</option>
+                <option value="cse">Computer Science</option>
+                <option value="it">Information Technology</option>
+                <option value="mech">Mechanical</option>
+                <option value="civil">Civil</option>
+              </select>
+
+              <select 
+                name="year" 
+                value={formData.year} 
+                onChange={handleChange} 
+                required 
+                className="w-full p-3 bg-[#A9C1D1] rounded-lg text-black font-medium"
+              >
+                <option value="" disabled className="text-gray-700">Select Year</option>
+                <option value="1">First Year</option>
+                <option value="2">Second Year</option>
+                <option value="3">Third Year</option>
+                <option value="4">Fourth Year</option>
+              </select>
+            </div>
+
+            <select 
+              name="position" 
+              value={formData.position} 
+              onChange={handleChange} 
+              required 
+              className="w-full p-3 bg-[#A9C1D1] rounded-lg text-black font-medium"
+            >
+              <option value="" disabled className="text-gray-700">Select Position</option>
               <option value="president">President</option>
               <option value="secretary">Secretary</option>
               <option value="treasurer">Treasurer</option>
               <option value="ladies_representative">Ladies Representative</option>
             </select>
 
-            <textarea name="additionalDetails" value={formData.additionalDetails} onChange={handleChange} placeholder="Additional Details (optional)" className="w-full p-3 bg-gray-100 rounded-lg h-24"></textarea>
-            
-            <input type="file" accept="image/*" onChange={handleFileChange} required/>
-            {formData.photoPreview && <img src={formData.photoPreview} alt="Preview" className="mt-3 w-32 h-32 object-cover rounded-lg border"/>}
+            <textarea 
+              name="additionalDetails" 
+              value={formData.additionalDetails} 
+              onChange={handleChange} 
+              placeholder="Additional Details (optional)" 
+              className="w-full p-3 bg-[#A9C1D1] rounded-lg h-24 text-black placeholder-gray-700 font-medium"
+            />
 
-<<<<<<< HEAD
-            {/* Position Applying For */}
-            <div className="form-group">
-              <label className="block text-xl font-medium text-black mb-2">Position Applying For</label>
-              <select 
-                name="position"
-                value={formData.position}
-                onChange={handleChange}
-                required
-                className="w-full p-3 bg-[#A9C1D1] rounded-lg border-2 border-transparent focus:border-[#4DA9DD] transition-all outline-none text-black appearance-none cursor-pointer"
-              >
-                <option value="" disabled>Select Position</option>
-                <option value="president">President</option>
-                <option value="secretary">Secretary</option>
-                <option value="treasurer">Treasurer</option>
-                <option value="treasurer">Ladies Representative</option>
-              </select>
-            </div>
-
-            {/* Additional Details */}
-            <div className="form-group">
-              <label className="block text-xl font-medium text-black mb-2">Additional Details</label>
-              <textarea 
-                name="additionalDetails"
-                value={formData.additionalDetails}
-                onChange={handleChange}
-                required
-                className="w-full p-3 bg-[#A9C1D1] rounded-lg border-2 border-transparent focus:border-[#4DA9DD] transition-all outline-none text-black placeholder-gray-600 h-32 resize-none"
-                placeholder="Enter additional details"
-              ></textarea>
-            </div>
-
-            {/* Upload Photo Section */}
-            <div className="flex flex-col items-center mt-8">
-              <label className="relative group cursor-pointer">
-                <div className="bg-[#D3D3D3] px-10 py-3 rounded-lg hover:bg-gray-300 transition-all transform hover:scale-105 active:scale-95">
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  Upload Photo
-                </div>
-                {/* Preview Image */}
-                <img
-                  id="photoPreview"
-                  alt="Preview"
-                  className="mt-4 w-32 h-32 rounded-lg object-cover hidden"
+            <div className="flex flex-col items-center gap-4">
+              <label className="bg-[#D3D3D3] px-10 py-3 rounded-lg cursor-pointer hover:bg-gray-300 transition-all">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                  className="hidden"
+                  required
                 />
+                Upload Photo
               </label>
+              {formData.photoPreview && (
+                <img 
+                  src={formData.photoPreview} 
+                  alt="Preview" 
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+              )}
             </div>
 
-            {/* Register Button */}
-            <div className="flex justify-center pt-6">
-              <button 
-                type="submit"
-                className="bg-[#4DA9DD] text-black px-20 py-3 rounded-lg text-xl font-medium hover:bg-[#3998CC] transition-all transform hover:scale-105 active:scale-95"
-              >
-                Register
-              </button>
-            </div>
-=======
-            <button type="submit" disabled={loading} className="bg-blue-500 text-white px-20 py-3 rounded-lg text-xl font-medium hover:bg-blue-600 transition-all">
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-[#4DA9DD] text-black px-20 py-3 rounded-lg text-xl font-medium 
+                hover:bg-[#3998CC] transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
+            >
               {loading ? 'Registering...' : 'Register'}
             </button>
->>>>>>> f9c3f9829949cae2109e0be7b5e8015653ed92fc
           </form>
         </div>
       </div>

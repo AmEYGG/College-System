@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -9,6 +9,12 @@ import SchoolIcon from '@mui/icons-material/School';
 import ProfileMenu from './common/ProfileMenu';
 
 export default function ElectionScreen() {
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  const toggleNotificationPanel = () => {
+    setIsNotificationOpen(prev => !prev);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -25,8 +31,16 @@ export default function ElectionScreen() {
               <HomeIcon className="text-black text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
             </Link>
             <div className="relative">
-              <NotificationsIcon className="text-black text-2xl cursor-pointer hover:text-blue-600 transition-colors" />
-              <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
+              <NotificationsIcon 
+                className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" 
+                onClick={toggleNotificationPanel} 
+              />
+              {isNotificationOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-4">
+                  <h3 className="font-bold">Notifications</h3>
+                  <p>No new notifications</p>
+                </div>
+              )}
             </div>
             <ProfileMenu />
           </div>
