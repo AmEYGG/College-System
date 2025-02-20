@@ -30,17 +30,72 @@ export default function Registration() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5000000) { // 5MB limit
+        alert('File is too large. Please choose an image under 5MB.');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file.');
+        return;
+      }
       setFormData(prev => ({
         ...prev,
         photo: file
       }));
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const previewImg = document.getElementById('photoPreview');
+        if (previewImg) {
+          previewImg.src = reader.result;
+          previewImg.style.display = 'block';
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
-    navigate('/login');
+    
+    // Convert photo to base64 string before saving
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      // Create candidate object with base64 image
+      const newCandidate = {
+        id: Date.now(),
+        name: formData.fullName,
+        department: formData.department,
+        collegeYear: formData.year,
+        // Use the uploaded photo if available, otherwise use default
+        image: reader.result || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop",
+        about: formData.additionalDetails,
+        position: formData.position
+      };
+
+      // Get existing candidates from localStorage
+      const existingCandidates = JSON.parse(localStorage.getItem('candidates') || '[]');
+      
+      // Add new candidate
+      const updatedCandidates = [...existingCandidates, newCandidate];
+      
+      // Save back to localStorage
+      localStorage.setItem('candidates', JSON.stringify(updatedCandidates));
+
+      // Show success message
+      alert('Registration successful! Your card will appear in the voting section.');
+      
+      // Navigate to voting page
+      navigate('/election/voting');
+    };
+
+    if (formData.photo) {
+      reader.readAsDataURL(formData.photo);
+    } else {
+      // Trigger onloadend even without a file
+      reader.onloadend();
+    }
   };
 
   return (
@@ -203,16 +258,24 @@ export default function Registration() {
               ></textarea>
             </div>
 
-            {/* Upload Photo */}
-            <div className="flex justify-center mt-8">
-              <label className="bg-[#D3D3D3] px-10 py-3 rounded-lg cursor-pointer hover:bg-gray-300 transition-all transform hover:scale-105 active:scale-95">
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
+            {/* Upload Photo Section */}
+            <div className="flex flex-col items-center mt-8">
+              <label className="relative group cursor-pointer">
+                <div className="bg-[#D3D3D3] px-10 py-3 rounded-lg hover:bg-gray-300 transition-all transform hover:scale-105 active:scale-95">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  Upload Photo
+                </div>
+                {/* Preview Image */}
+                <img
+                  id="photoPreview"
+                  alt="Preview"
+                  className="mt-4 w-32 h-32 rounded-lg object-cover hidden"
                 />
-                Upload Photo
               </label>
             </div>
 

@@ -6,7 +6,6 @@ import SchoolIcon from '@mui/icons-material/School';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import SubjectIcon from '@mui/icons-material/Subject';
 import CategoryIcon from '@mui/icons-material/Category';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ProfileMenu from './common/ProfileMenu';
 
 export default function ComplaintInfo() {
@@ -14,12 +13,9 @@ export default function ComplaintInfo() {
     complaintType: '',
     subject: '',
     description: '',
-    attachment: null,
     anonymous: true,
     priority: 'medium'
   });
-
-  const [previewUrl, setPreviewUrl] = useState(null);
 
   const complaintTypes = [
     { value: 'academic', label: 'Academic Issues' },
@@ -30,23 +26,11 @@ export default function ComplaintInfo() {
   ];
 
   const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    if (type === 'file') {
-      const file = files[0];
-      setFormData(prev => ({
-        ...prev,
-        attachment: file
-      }));
-      if (file) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      }
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -161,42 +145,6 @@ export default function ComplaintInfo() {
                 />
               </div>
 
-              {/* File Attachment */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Attach Evidence (if any)
-                </label>
-                <div className="relative group">
-                  <input
-                    type="file"
-                    name="attachment"
-                    onChange={handleChange}
-                    className="hidden"
-                    id="file-upload"
-                    accept="image/*,.pdf"
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className="flex items-center gap-2 px-4 py-3.5 bg-gray-50 border-2 border-dashed border-gray-300 
-                      rounded-xl cursor-pointer hover:border-orange-400 transition-colors group"
-                  >
-                    <AttachFileIcon className="text-orange-600 text-xl" />
-                    <span className="text-gray-600">
-                      {formData.attachment ? formData.attachment.name : 'Click to upload file'}
-                    </span>
-                  </label>
-                </div>
-                {previewUrl && formData.attachment?.type.startsWith('image/') && (
-                  <div className="mt-2">
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="max-h-32 rounded-lg"
-                    />
-                  </div>
-                )}
-              </div>
-
               {/* Options */}
               <div className="space-y-4">
                 {/* Anonymous Option */}
@@ -210,32 +158,6 @@ export default function ComplaintInfo() {
                   />
                   <span className="text-gray-700">File this complaint anonymously</span>
                 </label>
-
-                {/* Priority Level */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Priority Level
-                  </label>
-                  <div className="flex gap-4">
-                    {['low', 'medium', 'high'].map((priority) => (
-                      <label key={priority} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="priority"
-                          value={priority}
-                          checked={formData.priority === priority}
-                          onChange={handleChange}
-                          className={`form-radio ${
-                            priority === 'low' ? 'text-yellow-500 focus:ring-yellow-500' :
-                            priority === 'medium' ? 'text-orange-500 focus:ring-orange-500' :
-                            'text-red-600 focus:ring-red-500'
-                          }`}
-                        />
-                        <span className="capitalize">{priority}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               {/* Submit Button */}

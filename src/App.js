@@ -13,6 +13,7 @@ import BookingForm from './components/BookingForm';
 import LeaveForm from './components/LeaveForm';
 import HealthForm from './components/HealthForm';
 import ViewPatients from './components/ViewPatients';
+import VotingInfo from './components/VotingInfo';
 
 // Create and export the UserContext
 export const UserContext = createContext();
@@ -27,6 +28,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/election" element={<ElectionScreen />} />
         <Route path="/election/register" element={<Registration />} />
+        <Route path="/election/voting" element={<VotingInfo />} />
         <Route path="/facility-booking" element={<BookingForm />} />
         <Route path="/complaints" element={<ComplaintInfo />} />
         <Route path="/application" element={<ApplicationInfo />} />

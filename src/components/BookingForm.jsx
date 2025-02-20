@@ -8,13 +8,23 @@ import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import ProfileMenu from './common/ProfileMenu';
 
 export default function BookingForm() {
+  const facilities = [
+    { value: 'ground', label: 'Sports Ground' },
+    { value: 'classroom', label: 'Classroom' },
+    { value: 'auditorium', label: 'Auditorium' },
+    { value: 'lab', label: 'Computer Lab' },
+    { value: 'seminar', label: 'Seminar Hall' }
+  ];
+
   const [formData, setFormData] = useState({
     organization: '',
     leaderName: '',
     contactNo: '',
+    facility: '',
     reason: '',
     date: ''
   });
@@ -128,6 +138,27 @@ export default function BookingForm() {
                     hover:border-blue-400 text-gray-700"
                   required
                 />
+              </div>
+
+              {/* Facility Selection */}
+              <div className="relative group">
+                <MeetingRoomIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xl" />
+                <select
+                  name="facility"
+                  value={formData.facility}
+                  onChange={handleChange}
+                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
+                    focus:outline-none focus:border-blue-500 transition-colors
+                    hover:border-blue-400 text-gray-700 appearance-none cursor-pointer"
+                  required
+                >
+                  <option value="">Select Facility</option>
+                  {facilities.map(facility => (
+                    <option key={facility.value} value={facility.value}>
+                      {facility.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Reason Input */}
