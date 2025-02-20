@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EmailIcon from '@mui/icons-material/Email';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -6,10 +6,33 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 export default function Login() {
   const navigate = useNavigate();
+  
+  // State variables for form fields
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError(""); // Reset error state before submitting
+
+    try {
+      const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      alert("Login successful");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login Error:", error);
+      setError(error.message || "Server error. Please try again later");
+    }
   };
 
   return (
@@ -28,11 +51,13 @@ export default function Login() {
 
         {/* Login Form */}
         <div className="w-full bg-[#FFE4BA] rounded-[40px] p-12 shadow-lg transform hover:scale-[1.02] transition-transform duration-300">
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email field */}
             <div className="relative group">
               <input 
                 type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
                 required
                 placeholder="Email"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
@@ -44,6 +69,8 @@ export default function Login() {
             <div className="relative group">
               <input 
                 type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
                 required
                 placeholder="Password"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
@@ -54,10 +81,12 @@ export default function Login() {
             {/* Select Option field */}
             <div className="relative group">
               <select 
+                value={role} 
+                onChange={(e) => setRole(e.target.value)} 
                 required
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl text-black/70 appearance-none cursor-pointer focus:border-[#FF8A00] transition-colors"
               >
-                <option value="" disabled selected>Select Option</option>
+                <option value="" disabled>Select Option</option>
                 <option value="admin">Admin</option>
                 <option value="faculty">Faculty</option>
                 <option value="student">Student</option>
@@ -66,10 +95,13 @@ export default function Login() {
               <ArrowDropDownIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black/70 text-2xl pointer-events-none" />
             </div>
 
+            {/* Error Message */}
+            {error && <p className="text-red-600 text-center">{error}</p>}
+
             {/* Forgot Password */}
             <div className="text-right">
               <a href="/forgot-password" className="text-black/70 text-lg hover:text-[#FF8A00] transition-colors">
-                Forgot Password ?
+                Forgot Password?
               </a>
             </div>
 
