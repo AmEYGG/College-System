@@ -13,6 +13,13 @@ import SchoolIcon from '@mui/icons-material/School';
 import ProfileMenu from './common/ProfileMenu';
 
 export default function Dashboard() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  const toggleNotificationPanel = () => {
+    setIsNotificationOpen(prev => !prev);
+  };
+
   const modules = [
     {
       title: "Election",
@@ -58,11 +65,10 @@ export default function Dashboard() {
     }
   ];
 
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-  const toggleNotificationPanel = () => {
-    setIsNotificationOpen(prev => !prev);
-  };
+  // Filter modules based on search term
+  const filteredModules = modules.filter(module =>
+    module.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -102,21 +108,23 @@ export default function Dashboard() {
       </header>
 
       {/* Search Bar */}
-      <div className="container mx-auto mt-4 sm:mt-8 px-3 sm:px-4">
+      <div className="container mx-auto mt-4 px-4">
         <div className="relative w-full max-w-2xl mx-auto">
           <input
             type="text"
             placeholder="Search Module"
-            className="w-full p-2 sm:p-3 pl-9 sm:pl-12 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm sm:text-base"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-3 pl-12 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-base"
           />
-          <SearchIcon className="absolute left-2.5 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg sm:text-xl" />
+          <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
         </div>
       </div>
 
       {/* Modules Grid - Smaller cards */}
       <div className="container mx-auto mt-4 sm:mt-8 px-2 sm:px-4 pb-6 sm:pb-8">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5 max-w-4xl mx-auto">
-          {modules.map((module, index) => (
+          {filteredModules.map((module, index) => (
             <Link 
               key={index}
               to={module.path} 
@@ -136,4 +144,4 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+}  
