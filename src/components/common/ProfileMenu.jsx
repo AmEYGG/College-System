@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PersonIcon from '@mui/icons-material/Person';
@@ -7,9 +7,11 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import EmailIcon from '@mui/icons-material/Email';
 import SchoolIcon from '@mui/icons-material/School';
 import { Popover, Divider } from '@mui/material';
+import axios from 'axios';
 
 export default function ProfileMenu() {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [userData, setUserData] = useState({});
   const navigate = useNavigate();
 
   const handleClick = (event) => {
@@ -26,6 +28,22 @@ export default function ProfileMenu() {
   };
 
   const open = Boolean(anchorEl);
+
+  // Fetch User Data by Role
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Replace 'student@example.com' with actual email stored in localStorage or state
+        const email = localStorage.getItem('userEmail');  
+        const response = await axios.get(`http://localhost:5000/api/users/getUserByRole?role=Student&email=${email}`);
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   return (
     <>
@@ -60,8 +78,8 @@ export default function ProfileMenu() {
                 <AccountCircleIcon className="text-blue-600 text-3xl" />
               </div>
               <div className="text-white">
-                <h3 className="text-xl font-bold">Student Name</h3>
-                <p className="text-sm text-blue-100">Student</p>
+                <h3 className="text-xl font-bold">{userData.fullName || "Student Name"}</h3>
+                <p className="text-sm text-blue-100">{userData.role || "Student"}</p>
               </div>
             </div>
           </div>
@@ -70,11 +88,11 @@ export default function ProfileMenu() {
           <div className="px-6 py-4 bg-gray-50">
             <div className="flex items-center gap-3 text-gray-600">
               <EmailIcon className="text-gray-400" />
-              <span className="text-sm">Student Email</span>
+              <span className="text-sm">{userData.email || "Student Email"}</span>
             </div>
             <div className="flex items-center gap-3 text-gray-600 mt-2">
               <SchoolIcon className="text-gray-400" />
-              <span className="text-sm">Student Department</span>
+              <span className="text-sm">{userData.department || "Student Department"}</span>
             </div>
           </div>
 
@@ -123,4 +141,4 @@ export default function ProfileMenu() {
       </Popover>
     </>
   );
-} 
+}

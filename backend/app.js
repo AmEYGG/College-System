@@ -3,13 +3,24 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const errorHandler = require('./middlewares/errorHandler');
+const path = require("path");
+const connectDB = require('./config/db');
+const candidateRoutes = require('./routes/candidateRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
+const electionRoutes = require("./routes/electionRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 // Express app
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.use("/api/users", userRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Routes
+app.use("/api/candidates", electionRoutes);
 // MongoDB Connection
 mongoose.connect("mongodb://127.0.0.1:27017/College_Management", {
   useNewUrlParser: true,
@@ -177,6 +188,8 @@ app.get("/test-users", async (req, res) => {
     res.status(500).json({ message: "Error fetching users", error });
   }
 });
+app.use('/api/candidates', candidateRoutes);
+app.use(errorHandler);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
