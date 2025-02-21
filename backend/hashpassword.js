@@ -9,11 +9,15 @@ mongoose.connect("mongodb://localhost:27017/College_Management", {
 
 // User Schema
 const userSchema = new mongoose.Schema({
-  name: String,
-  email: String,
+  full_name: String,
+  address: String,  
+  college_email: String,
+  password: String, // This field stores hashed passwords
   role: String,
-  passwordHash: String, // This field stores hashed passwords
   department: String,
+  studing_year : String,
+  phone_number : String,
+  parent_phone_number : String,
 });
 
 const User = mongoose.model("users", userSchema);
@@ -23,13 +27,13 @@ async function hashPasswords() {
   const users = await User.find(); // Fetch all users
 
   for (let user of users) {
-    if (!user.passwordHash.startsWith("$2b$")) { // Check if already hashed
-      const hashedPassword = await bcrypt.hash(user.passwordHash, 10); // Hash the password
+    if (!user.password.startsWith("$2b$")) { // Check if already hashed
+      const hashedPassword = await bcrypt.hash(user.password, 10); // Hash the password
       await User.updateOne(
         { _id: user._id },
-        { $set: { passwordHash: hashedPassword } }
+        { $set: { password: hashedPassword } }
       );
-      console.log(`Updated password for: ${user.email}`);
+      console.log(`Updated password for: ${user.college_email}`);
     }
   }
 
