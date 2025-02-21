@@ -9,15 +9,20 @@ mongoose.connect("mongodb://localhost:27017/College_Management", {
 
 // User Schema
 const userSchema = new mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
   full_name: String,
-  address: String,  
-  college_email: String,
-  password: String, // This field stores hashed passwords
-  role: String,
+  address: String,
+  college_email: { type: String, unique: true },
+  password: String,
+  role: {
+    type: String,
+    enum: ['Student', 'Admin', 'Faculty', 'Doctor']
+  },
   department: String,
-  studing_year : String,
-  phone_number : String,
-  parent_phone_number : String,
+  studying_year: String,
+  div: String,
+  phone_number: String,
+  parents_phone_number: String
 });
 
 const User = mongoose.model("users", userSchema);
@@ -27,8 +32,8 @@ async function hashPasswords() {
   const users = await User.find(); // Fetch all users
 
   for (let user of users) {
-    if (!user.password.startsWith("$2b$")) { // Check if already hashed
-      const hashedPassword = await bcrypt.hash(user.password, 10); // Hash the password
+    if (!user.password || !user.password.startsWith("$2b$")) { // Check if already hashed
+      const hashedPassword = await bcrypt.hash(user.password || "defaultPassword", 10);
       await User.updateOne(
         { _id: user._id },
         { $set: { password: hashedPassword } }

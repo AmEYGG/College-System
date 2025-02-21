@@ -19,11 +19,20 @@ mongoose.connect("mongodb://127.0.0.1:27017/College_Management", {
 
 // User Model
 const User = mongoose.model("users", new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  role: String,
-  passwordHash: String,
+  _id: mongoose.Schema.Types.ObjectId,
+  full_name: String,
+  address: String,
+  college_email: { type: String, unique: true },
+  password: String,
+  role: {
+    type: String,
+    enum: ['Student', 'Admin', 'Faculty', 'Doctor']
+  },
   department: String,
+  studying_year: String,
+  div: String,
+  phone_number: String,
+  parents_phone_number: String
 }));
 
 // 🛠 Login Route
@@ -31,26 +40,39 @@ app.post("/login", async (req, res) => {
   try {
     console.log("🔹 Login Request Received:", req.body);
 
-    const { email, password, role } = req.body;
+    const { college_email, email, password, role } = req.body;
     
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: "All fields are required" });
+    // Allow both college_email and email for backwards compatibility
+    const userEmail = college_email || email;
+
+    // Validate inputs with specific error messages
+    if (!userEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+    if (!role) {
+      return res.status(400).json({ message: "Role is required" });
     }
 
-    const user = await User.findOne({ email });
+    // Find user by email
+    const user = await User.findOne({ college_email: userEmail });
     if (!user) {
-      console.log("❌ User Not Found:", email);
+      console.log("❌ User Not Found:", userEmail);
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.role !== role) {
-      console.log("❌ Role Mismatch:", role);
+    // Normalize role case for comparison
+    const normalizedRole = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+    if (user.role !== normalizedRole) {
+      console.log("❌ Role Mismatch. Expected:", user.role, "Got:", normalizedRole);
       return res.status(403).json({ message: "Invalid role" });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      console.log("❌ Invalid Password for:", email);
+      console.log("❌ Invalid Password for:", userEmail);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -75,15 +97,17 @@ app.post("/login", async (req, res) => {
         dashboardUrl = '/dashboard';
     }
 
-    console.log("✅ Login Successful for:", email);
+    console.log("✅ Login Successful for:", userEmail);
     res.json({ 
       message: "Login successful", 
       token,
       user: {
-        name: user.name,
-        email: user.email,
+        full_name: user.full_name,
+        college_email: user.college_email,
         role: user.role,
-        department: user.department
+        department: user.department,
+        studying_year: user.studying_year,
+        div: user.div
       },
       dashboardUrl 
     });
@@ -98,7 +122,7 @@ app.post("/login", async (req, res) => {
 app.get("/admin-dashboard", authMiddleware(['admin']), async (req, res) => {
   try {
     // Fetch admin specific data
-    const adminData = await User.findById(req.user.id).select('-passwordHash');
+    const adminData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Admin", 
       user: adminData 
@@ -110,7 +134,7 @@ app.get("/admin-dashboard", authMiddleware(['admin']), async (req, res) => {
 
 app.get("/student-dashboard", authMiddleware(['student']), async (req, res) => {
   try {
-    const studentData = await User.findById(req.user.id).select('-passwordHash');
+    const studentData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Student", 
       user: studentData 
@@ -122,7 +146,7 @@ app.get("/student-dashboard", authMiddleware(['student']), async (req, res) => {
 
 app.get("/faculty-dashboard", authMiddleware(['faculty']), async (req, res) => {
   try {
-    const facultyData = await User.findById(req.user.id).select('-passwordHash');
+    const facultyData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Faculty", 
       user: facultyData 
@@ -134,13 +158,23 @@ app.get("/faculty-dashboard", authMiddleware(['faculty']), async (req, res) => {
 
 app.get("/doctor-dashboard", authMiddleware(['doctor']), async (req, res) => {
   try {
-    const doctorData = await User.findById(req.user.id).select('-passwordHash');
+    const doctorData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Doctor", 
       user: doctorData 
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Test route to check users in database
+app.get("/test-users", async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users", error });
   }
 });
 
