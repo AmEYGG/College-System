@@ -17,7 +17,7 @@ export default function AdminDash() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const modules = [
-    { title: "Election Management", path: "/election-management", icon: <HowToVoteIcon />, bgColor: "bg-[#FFE4BA]", iconBg: "bg-[#FF8A00]" },
+    { title: "Election Management", path: "/admin/election", icon: <HowToVoteIcon />, bgColor: "bg-[#FFE4BA]", iconBg: "bg-[#FF8A00]" },
     { title: "Complaint Review", path: "/complaint-review", icon: <ReportIcon />, bgColor: "bg-[#B8D8BA]", iconBg: "bg-[#4A7B4C]" },
     { title: "Facility Booking Request", path: "/facility-booking-request", icon: <AssignmentIcon />, bgColor: "bg-[#FFD6D6]", iconBg: "bg-[#FF4D4D]" },
     { title: "Budget & Fund Administration", path: "/budget-admin", icon: <AccountBalanceWalletIcon />, bgColor: "bg-[#D4E6F1]", iconBg: "bg-[#2E86C1]" },

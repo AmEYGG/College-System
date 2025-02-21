@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -21,6 +21,7 @@ export default function Registration() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [positions, setPositions] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,6 +102,12 @@ export default function Registration() {
   const toggleNotificationPanel = () => {
     setIsNotificationOpen(prev => !prev);
   };
+
+  // Fetch positions from localStorage
+  useEffect(() => {
+    const storedPositions = JSON.parse(localStorage.getItem('positions') || '[]');
+    setPositions(storedPositions);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -219,10 +226,9 @@ export default function Registration() {
               className="w-full p-3 bg-[#A9C1D1] rounded-lg text-black font-medium"
             >
               <option value="" disabled className="text-gray-700">Select Position</option>
-              <option value="president">President</option>
-              <option value="secretary">Secretary</option>
-              <option value="treasurer">Treasurer</option>
-              <option value="ladies_representative">Ladies Representative</option>
+              {positions.map((pos, index) => (
+                <option key={index} value={pos.position}>{pos.position} ({pos.club})</option>
+              ))}
             </select>
 
             <textarea 

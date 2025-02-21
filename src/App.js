@@ -14,6 +14,8 @@ import LeaveForm from './components/LeaveForm';
 import HealthForm from './components/HealthForm';
 import ViewPatients from './components/ViewPatients';
 import VotingInfo from './components/VotingInfo';
+import AdminElection from './components/AdminElection';
+import Positions from './components/Positions';
 
 // Create and export the UserContext
 export const UserContext = createContext();
@@ -37,6 +39,8 @@ function App() {
         <Route path="/academic-integrity" element={<div>Academic Integrity Page</div>} />
         <Route path="/forgot-password" element={<ForgotScreen />} />
         <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route path="/admin/election" element={<AdminElection />} />
+        <Route path="/admin/election/positions" element={<Positions />} />
         <Route path="/doctor-dashboard" element={<DoctorDash />} />
         <Route path="/doctor-dashboard/add-patient" element={<HealthForm />} />
         <Route path="/doctor-dashboard/view-patients" element={<ViewPatients />} />

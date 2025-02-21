@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EmailIcon from '@mui/icons-material/Email';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,14 +70,19 @@ export default function Login() {
             {/* Password field */}
             <div className="relative group">
               <input 
-                type="password" 
+                type={showPassword ? 'text' : 'password'}
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 required
                 placeholder="Password"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
               />
-              <LockOutlinedIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black/70 text-2xl" />
+              <span 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer" 
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </span>
             </div>
 
             {/* Select Option field */}
@@ -90,7 +97,7 @@ export default function Login() {
                 <option value="admin">Admin</option>
                 <option value="faculty">Faculty</option>
                 <option value="student">Student</option>
-                <option value="student">Doctor</option>
+                <option value="doctor">Doctor</option>
               </select>
               <ArrowDropDownIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black/70 text-2xl pointer-events-none" />
             </div>
