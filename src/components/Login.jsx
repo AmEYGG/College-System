@@ -20,17 +20,25 @@ export default function Login() {
     setError(""); // Reset error state before submitting
 
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ 
+          college_email: email,
+          password,
+          role 
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
+      // Store token and user data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
       alert("Login successful");
-      navigate("/dashboard");
+      navigate(data.dashboardUrl);
     } catch (error) {
       console.error("Login Error:", error);
       setError(error.message || "Server error. Please try again later");
