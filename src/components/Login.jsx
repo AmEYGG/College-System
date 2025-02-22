@@ -4,44 +4,48 @@ import EmailIcon from '@mui/icons-material/Email';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import axios from 'axios';
 
 export default function Login() {
   const navigate = useNavigate();
   
   // State variables for form fields
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    role: ""
+  });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Reset error state before submitting
+    setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          college_email: email,
-          password,
-          role 
-        }),
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        college_email: formData.email,
+        password: formData.password,
+        role: formData.role
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      // Store auth data
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      
+      // Set default auth header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
 
-      // Store token and user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      alert("Login successful");
-      navigate(data.dashboardUrl);
+      navigate(res.data.dashboardUrl);
     } catch (error) {
-      console.error("Login Error:", error);
-      setError(error.message || "Server error. Please try again later");
+      setError(error.response?.data?.message || "Login failed");
     }
   };
 
@@ -66,8 +70,9 @@ export default function Login() {
             <div className="relative group">
               <input 
                 type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+                name="email"
+                value={formData.email} 
+                onChange={handleChange} 
                 required
                 placeholder="Email"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
@@ -79,8 +84,9 @@ export default function Login() {
             <div className="relative group">
               <input 
                 type={showPassword ? 'text' : 'password'}
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+                name="password"
+                value={formData.password} 
+                onChange={handleChange} 
                 required
                 placeholder="Password"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
@@ -96,8 +102,9 @@ export default function Login() {
             {/* Select Option field */}
             <div className="relative group">
               <select 
-                value={role} 
-                onChange={(e) => setRole(e.target.value)} 
+                name="role"
+                value={formData.role} 
+                onChange={handleChange} 
                 required
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl text-black/70 appearance-none cursor-pointer focus:border-[#FF8A00] transition-colors"
               >

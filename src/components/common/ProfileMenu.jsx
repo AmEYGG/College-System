@@ -11,7 +11,9 @@ import axios from 'axios';
 
 export default function ProfileMenu() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleClick = (event) => {
@@ -29,21 +31,37 @@ export default function ProfileMenu() {
 
   const open = Boolean(anchorEl);
 
-  // Fetch User Data by Role
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Replace 'student@example.com' with actual email stored in localStorage or state
-        const email = localStorage.getItem('userEmail');  
-        const response = await axios.get(`http://localhost:5000/api/users/getUserByRole?role=Student&email=${email}`);
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || !user) {
+          throw new Error('No authentication data');
+        }
+
+        // Set auth header
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Get user data based on role
+        const endpoint = `/api/users/profile`;
+        const response = await axios.get(`http://localhost:5000${endpoint}`);
+        
         setUserData(response.data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUserData();
   }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error loading profile</div>;
+  if (!userData) return <div>No user data</div>;
 
   return (
     <>
@@ -78,7 +96,7 @@ export default function ProfileMenu() {
                 <AccountCircleIcon className="text-blue-600 text-3xl" />
               </div>
               <div className="text-white">
-                <h3 className="text-xl font-bold">{userData.fullName || "Student Name"}</h3>
+                <h3 className="text-xl font-bold">{userData.full_name || "Student Name"}</h3>
                 <p className="text-sm text-blue-100">{userData.role || "Student"}</p>
               </div>
             </div>
@@ -88,7 +106,7 @@ export default function ProfileMenu() {
           <div className="px-6 py-4 bg-gray-50">
             <div className="flex items-center gap-3 text-gray-600">
               <EmailIcon className="text-gray-400" />
-              <span className="text-sm">{userData.email || "Student Email"}</span>
+              <span className="text-sm">{userData.college_email || "Student Email"}</span>
             </div>
             <div className="flex items-center gap-3 text-gray-600 mt-2">
               <SchoolIcon className="text-gray-400" />

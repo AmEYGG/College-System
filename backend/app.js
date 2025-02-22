@@ -1,13 +1,15 @@
 const express = require("express");
 const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const errorHandler = require('./middlewares/errorHandler');
 const path = require("path");
 const connectDB = require('./config/db');
+const User = require('./models/User');
 const candidateRoutes = require('./routes/candidateRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
 const electionRoutes = require("./routes/electionRoutes");
 const userRoutes = require("./routes/userRoutes");
-const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 
@@ -17,35 +19,14 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/api/users", userRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Connect to Database
+connectDB();
 
 // Routes
 app.use("/api/candidates", electionRoutes);
-// MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/College_Management", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
-
-// User Model
-const User = mongoose.model("users", new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  full_name: String,
-  address: String,
-  college_email: { type: String, unique: true },
-  password: String,
-  role: {
-    type: String,
-    enum: ['Student', 'Admin', 'Faculty', 'Doctor']
-  },
-  department: String,
-  studying_year: String,
-  div: String,
-  phone_number: String,
-  parents_phone_number: String
-}));
+app.use("/api/auth", authRoutes);
+app.use("/api", dashboardRoutes);
+app.use("/api/users", userRoutes);
 
 // 🛠 Login Route
 app.post("/login", async (req, res) => {
@@ -92,17 +73,17 @@ app.post("/login", async (req, res) => {
 
     // Determine dashboard URL based on role
     let dashboardUrl;
-    switch (user.role.toLowerCase()) {
-      case 'admin':
+    switch (user.role) {
+      case 'Admin':
         dashboardUrl = '/admin-dashboard';
         break;
-      case 'student':
-        dashboardUrl = '/student-dashboard';
+      case 'Student':
+        dashboardUrl = '/dashboard';
         break;
-      case 'faculty':
-        dashboardUrl = '/faculty-dashboard';
+      case 'Faculty':
+        dashboardUrl = '/admin-dashboard';
         break;
-      case 'doctor':
+      case 'Doctor':
         dashboardUrl = '/doctor-dashboard';
         break;
       default:
@@ -131,7 +112,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Protected Routes for Different Dashboards
-app.get("/admin-dashboard", authMiddleware(['admin']), async (req, res) => {
+app.get("/admin-dashboard", authMiddleware(['Admin', 'Faculty']), async (req, res) => {
   try {
     // Fetch admin specific data
     const adminData = await User.findById(req.user.id).select('-password');
@@ -144,7 +125,7 @@ app.get("/admin-dashboard", authMiddleware(['admin']), async (req, res) => {
   }
 });
 
-app.get("/student-dashboard", authMiddleware(['student']), async (req, res) => {
+app.get("/dashboard", authMiddleware(['Student']), async (req, res) => {
   try {
     const studentData = await User.findById(req.user.id).select('-password');
     res.json({ 
@@ -168,7 +149,7 @@ app.get("/faculty-dashboard", authMiddleware(['faculty']), async (req, res) => {
   }
 });
 
-app.get("/doctor-dashboard", authMiddleware(['doctor']), async (req, res) => {
+app.get("/doctor-dashboard", authMiddleware(['Doctor']), async (req, res) => {
   try {
     const doctorData = await User.findById(req.user.id).select('-password');
     res.json({ 
@@ -191,12 +172,6 @@ app.get("/test-users", async (req, res) => {
 });
 app.use('/api/candidates', candidateRoutes);
 app.use(errorHandler);
-// Connect to Database
-connectDB();
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api", dashboardRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
