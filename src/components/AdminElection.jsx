@@ -48,7 +48,7 @@ export default function AdminElection() {
 
       <h1 className="text-2xl font-bold text-center mb-6">Admin Election Management</h1>
       <div className="container mx-auto px-4 py-4">
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap justify-center gap-4"> {/* Flex wrap for side by side */}
           {/* Add Position Card */}
           <Link 
             to="/admin/election/positions" 
@@ -63,7 +63,7 @@ export default function AdminElection() {
 
           {/* Manage Candidates Card */}
           <Link 
-            to="/admin/election/manage-candidates" 
+            to="/admin/manage-candidates" 
             className="bg-[#D4E6F1] rounded-lg p-5 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1"
           >
             <div className="bg-[#2E86C1] p-3 rounded-full mb-2.5">

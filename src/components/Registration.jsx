@@ -16,6 +16,8 @@ export default function Registration() {
     additionalDetails: '',
     photo: null,
     photoPreview: null,
+    name: '',
+    description: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -25,11 +27,14 @@ export default function Registration() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+  
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      post: name === "position" ? value : prev.post, // Set post when position is selected
     }));
   };
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -75,8 +80,11 @@ export default function Registration() {
         collegeYear: formData.year,
         image: formData.photoPreview || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop",
         about: formData.additionalDetails,
-        position: formData.position
+        position: formData.position,
+        post: formData.position, // Ensure post is stored correctly
+        description: formData.description
       };
+      
 
       // Get existing candidates from localStorage
       const existingCandidates = JSON.parse(localStorage.getItem('candidates') || '[]');
@@ -230,14 +238,15 @@ export default function Registration() {
                 <option key={index} value={pos.position}>{pos.position} ({pos.club})</option>
               ))}
             </select>
-
             <textarea 
-              name="additionalDetails" 
-              value={formData.additionalDetails} 
-              onChange={handleChange} 
-              placeholder="Additional Details (optional)" 
-              className="w-full p-3 bg-[#A9C1D1] rounded-lg h-24 text-black placeholder-gray-700 font-medium"
-            />
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            required
+            className="w-full p-3 bg-[#A9C1D1] rounded-lg h-24 text-black placeholder-gray-700 font-medium"
+            placeholder="Description"
+          />
 
             <div className="flex flex-col items-center gap-4">
               <label className="bg-[#D3D3D3] px-10 py-3 rounded-lg cursor-pointer hover:bg-gray-300 transition-all">

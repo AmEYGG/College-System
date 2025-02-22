@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -7,6 +7,7 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import SubjectIcon from '@mui/icons-material/Subject';
 import CategoryIcon from '@mui/icons-material/Category';
 import ProfileMenu from './common/ProfileMenu';
+import { toast } from 'react-toastify';
 
 export default function ComplaintInfo() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,8 @@ export default function ComplaintInfo() {
     priority: 'medium'
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [complaints, setComplaints] = useState([]);
 
   const complaintTypes = [
     { value: 'academic', label: 'Academic Issues' },
@@ -36,13 +39,44 @@ export default function ComplaintInfo() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-    // Handle form submission
+    const newComplaint = {
+      complaintType: formData.complaintType,
+      subject: formData.subject,
+      description: formData.description,
+      status: 'pending', // Default status
+    };
+
+    // Save to localStorage
+    const existingComplaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+    localStorage.setItem('complaints', JSON.stringify([...existingComplaints, newComplaint]));
+
+    // Show success message
+    toast.success('Complaint filed successfully!');
+    setFormData({
+      complaintType: '',
+      subject: '',
+      description: '',
+      anonymous: true,
+      priority: 'medium'
+    });
   };
 
   const toggleNotificationPanel = () => {
     setIsNotificationOpen(prev => !prev);
   };
+
+  useEffect(() => {
+    const storedComplaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+    setComplaints(storedComplaints);
+  }, []);
+
+  React.useEffect(() => {
+    const complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+    const lastComplaint = complaints[complaints.length - 1];
+    if (lastComplaint) {
+      setMessage(`The complaint has been ${lastComplaint.status}.`);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 flex flex-col">
@@ -196,6 +230,38 @@ export default function ComplaintInfo() {
                 <p>False complaints may lead to disciplinary action.</p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-5">
+            <h2 className="text-2xl font-bold text-white text-center tracking-wide">
+              Complaint Status
+            </h2>
+          </div>
+          <div className="p-8">
+            <p className="text-center">{message}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-5">
+            <h2 className="text-2xl font-bold text-white text-center tracking-wide">
+              Complaint Information
+            </h2>
+          </div>
+          <div className="p-8">
+            {complaints.map((complaint, index) => (
+              <div key={index} className="border p-4 mb-2">
+                <h3 className="font-bold">{complaint.subject}</h3>
+                <p>{complaint.description}</p>
+                <p>Status: {complaint.status || 'Pending'}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import ReportIcon from '@mui/icons-material/Report';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
@@ -18,12 +18,12 @@ export default function AdminDash() {
 
   const modules = [
     { title: "Election Management", path: "/admin/election", icon: <HowToVoteIcon />, bgColor: "bg-[#FFE4BA]", iconBg: "bg-[#FF8A00]" },
-    { title: "Complaint Review", path: "/complaint-review", icon: <ReportIcon />, bgColor: "bg-[#B8D8BA]", iconBg: "bg-[#4A7B4C]" },
+    { title: "Complaint Review", path: "/admin/view-complaints", icon: <ReportProblemIcon />, bgColor: "bg-[#B8D8BA]", iconBg: "bg-[#4A7B4C]" },
     { title: "Facility Booking Request", path: "/facility-booking-request", icon: <AssignmentIcon />, bgColor: "bg-[#FFD6D6]", iconBg: "bg-[#FF4D4D]" },
     { title: "Budget & Fund Administration", path: "/budget-admin", icon: <AccountBalanceWalletIcon />, bgColor: "bg-[#D4E6F1]", iconBg: "bg-[#2E86C1]" },
     { title: "Event & Budget Management", path: "/event-management", icon: <EventNoteIcon />, bgColor: "bg-[#E8DAEF]", iconBg: "bg-[#8E44AD]" },
     { title: "Academic Integrity Record", path: "/academic-integrity", icon: <VerifiedUserIcon />, bgColor: "bg-[#FCF3CF]", iconBg: "bg-[#F1C40F]" },
-    { title: "Health & Leave Notification", path: "/health-leave", icon: <LocalHospitalIcon />, bgColor: "bg-[#FADBD8]", iconBg: "bg-[#E74C3C]" }
+    { title: "Health & Leave Notification", path: "/health-leave", icon: <LocalHospitalIcon />, bgColor: "bg-[#FADBD8]", iconBg: "bg-[#E74C3C]" },
   ];
 
   const filteredModules = modules.filter(module => module.title.toLowerCase().includes(searchTerm.toLowerCase()));
