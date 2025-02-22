@@ -20,6 +20,7 @@ export default function ComplaintInfo() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [complaints, setComplaints] = useState([]);
+  const [evidence, setEvidence] = useState(null);
 
   const complaintTypes = [
     { value: 'academic', label: 'Academic Issues' },
@@ -63,6 +64,10 @@ export default function ComplaintInfo() {
 
   const toggleNotificationPanel = () => {
     setIsNotificationOpen(prev => !prev);
+  };
+
+  const handleFileChange = (e) => {
+    setEvidence(e.target.files[0]);
   };
 
   useEffect(() => {
@@ -189,6 +194,16 @@ export default function ComplaintInfo() {
                     focus:outline-none focus:border-orange-500 transition-colors
                     hover:border-orange-400 text-gray-700 resize-none h-32"
                   required
+                />
+              </div>
+
+              {/* Attach Evidence Field */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Attach Evidence (if any)</label>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 hover:border-blue-400 transition duration-200 ease-in-out h-12 p-2"
                 />
               </div>
 

@@ -1,56 +1,71 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const cors = require("cors");
+const errorHandler = require('./middlewares/errorHandler');
+const path = require("path");
+const connectDB = require('./config/db');
+const User = require('./models/User');
+const candidateRoutes = require('./routes/candidateRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
+const electionRoutes = require("./routes/electionRoutes");
+const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
-// Express app
 const app = express();
+
+// Middleware
 app.use(express.json());
 app.use(cors());
 
-// MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/College_Management", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
+// Connect to Database
+connectDB();
 
-// User Model
-const User = mongoose.model("users", new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  role: String,
-  passwordHash: String,
-  department: String,
-}));
+// Routes
+app.use("/api/candidates", electionRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", dashboardRoutes);
+app.use("/api/users", userRoutes);
 
 // 🛠 Login Route
 app.post("/login", async (req, res) => {
   try {
     console.log("🔹 Login Request Received:", req.body);
 
-    const { email, password, role } = req.body;
+    const { college_email, email, password, role } = req.body;
     
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: "All fields are required" });
+    // Allow both college_email and email for backwards compatibility
+    const userEmail = college_email || email;
+
+    // Validate inputs with specific error messages
+    if (!userEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+    if (!role) {
+      return res.status(400).json({ message: "Role is required" });
     }
 
-    const user = await User.findOne({ email });
+    // Find user by email
+    const user = await User.findOne({ college_email: userEmail });
     if (!user) {
-      console.log("❌ User Not Found:", email);
+      console.log("❌ User Not Found:", userEmail);
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.role !== role) {
-      console.log("❌ Role Mismatch:", role);
+    // Normalize role case for comparison
+    const normalizedRole = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+    if (user.role !== normalizedRole) {
+      console.log("❌ Role Mismatch. Expected:", user.role, "Got:", normalizedRole);
       return res.status(403).json({ message: "Invalid role" });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      console.log("❌ Invalid Password for:", email);
+      console.log("❌ Invalid Password for:", userEmail);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -58,32 +73,34 @@ app.post("/login", async (req, res) => {
 
     // Determine dashboard URL based on role
     let dashboardUrl;
-    switch (user.role.toLowerCase()) {
-      case 'admin':
+    switch (user.role) {
+      case 'Admin':
         dashboardUrl = '/admin-dashboard';
         break;
-      case 'student':
-        dashboardUrl = '/student-dashboard';
+      case 'Student':
+        dashboardUrl = '/dashboard';
         break;
-      case 'faculty':
-        dashboardUrl = '/faculty-dashboard';
+      case 'Faculty':
+        dashboardUrl = '/admin-dashboard';
         break;
-      case 'doctor':
+      case 'Doctor':
         dashboardUrl = '/doctor-dashboard';
         break;
       default:
         dashboardUrl = '/dashboard';
     }
 
-    console.log("✅ Login Successful for:", email);
+    console.log("✅ Login Successful for:", userEmail);
     res.json({ 
       message: "Login successful", 
       token,
       user: {
-        name: user.name,
-        email: user.email,
+        full_name: user.full_name,
+        college_email: user.college_email,
         role: user.role,
-        department: user.department
+        department: user.department,
+        studying_year: user.studying_year,
+        div: user.div
       },
       dashboardUrl 
     });
@@ -95,10 +112,10 @@ app.post("/login", async (req, res) => {
 });
 
 // Protected Routes for Different Dashboards
-app.get("/admin-dashboard", authMiddleware(['admin']), async (req, res) => {
+app.get("/admin-dashboard", authMiddleware(['Admin', 'Faculty']), async (req, res) => {
   try {
     // Fetch admin specific data
-    const adminData = await User.findById(req.user.id).select('-passwordHash');
+    const adminData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Admin", 
       user: adminData 
@@ -108,9 +125,9 @@ app.get("/admin-dashboard", authMiddleware(['admin']), async (req, res) => {
   }
 });
 
-app.get("/student-dashboard", authMiddleware(['student']), async (req, res) => {
+app.get("/dashboard", authMiddleware(['Student']), async (req, res) => {
   try {
-    const studentData = await User.findById(req.user.id).select('-passwordHash');
+    const studentData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Student", 
       user: studentData 
@@ -122,7 +139,7 @@ app.get("/student-dashboard", authMiddleware(['student']), async (req, res) => {
 
 app.get("/faculty-dashboard", authMiddleware(['faculty']), async (req, res) => {
   try {
-    const facultyData = await User.findById(req.user.id).select('-passwordHash');
+    const facultyData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Faculty", 
       user: facultyData 
@@ -132,9 +149,9 @@ app.get("/faculty-dashboard", authMiddleware(['faculty']), async (req, res) => {
   }
 });
 
-app.get("/doctor-dashboard", authMiddleware(['doctor']), async (req, res) => {
+app.get("/doctor-dashboard", authMiddleware(['Doctor']), async (req, res) => {
   try {
-    const doctorData = await User.findById(req.user.id).select('-passwordHash');
+    const doctorData = await User.findById(req.user.id).select('-password');
     res.json({ 
       message: "Welcome Doctor", 
       user: doctorData 
@@ -144,13 +161,25 @@ app.get("/doctor-dashboard", authMiddleware(['doctor']), async (req, res) => {
   }
 });
 
+// Test route to check users in database
+app.get("/test-users", async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users", error });
+  }
+});
+app.use('/api/candidates', candidateRoutes);
+app.use(errorHandler);
+
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use. Please try another port.`);
+    console.error(`❌ Port ${PORT} is already in use`);
   } else {
     console.error('❌ Server error:', err);
   }

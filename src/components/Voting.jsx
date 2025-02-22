@@ -8,20 +8,32 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 
 export default function Voting() {
   const [posts, setPosts] = useState([]);
-  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(localStorage.getItem('selectedPosition') || '');
   const [candidates, setCandidates] = useState([]);
+  const [votedCandidate, setVotedCandidate] = useState(null);
+  const [hasVoted, setHasVoted] = useState(false);
 
   useEffect(() => {
-    // Fetch posts and candidates from localStorage or API
+    // Fetch posts from local storage
     const storedPosts = JSON.parse(localStorage.getItem('posts') || '[]');
     setPosts(storedPosts);
+
+    // Fetch candidates from local storage
+    const storedCandidates = JSON.parse(localStorage.getItem('candidates') || '[]');
+    setCandidates(storedCandidates);
   }, []);
 
   const handlePostSelect = (post) => {
     setSelectedPost(post);
-    const storedCandidates = JSON.parse(localStorage.getItem('candidates') || '[]');
-    const filteredCandidates = storedCandidates.filter(candidate => candidate.post === post);
-    setCandidates(filteredCandidates);
+    localStorage.setItem('selectedPosition', post);
+  };
+
+  const handleVote = (candidate) => {
+    if (!hasVoted) {
+      setVotedCandidate(candidate.name);
+      setHasVoted(true);
+      alert(`You voted for ${candidate.name}`);
+    }
   };
 
   return (
@@ -59,9 +71,24 @@ export default function Voting() {
       {/* Posts Selection */}
       <div className="container mx-auto px-4 py-6">
         <h2 className="text-2xl font-bold mb-4 text-center">Select a Post to Vote</h2>
+
+        {/* Display the selected position in a textbox */}
+        {selectedPost && (
+          <div className="mb-4 flex justify-center">
+            <div className="w-full max-w-md p-3 text-lg font-bold text-center bg-gray-200 border border-gray-300 rounded-lg">
+              Candidates applied for: {selectedPost}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {posts.map((post, index) => (
-            <div key={index} className="bg-white p-4 rounded-lg shadow-md cursor-pointer" onClick={() => handlePostSelect(post)}>
+            <div 
+              key={index} 
+              className={`bg-white p-4 rounded-lg shadow-md cursor-pointer transition
+                ${selectedPost === post ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}
+              onClick={() => handlePostSelect(post)}
+            >
               <AssignmentIcon className="text-blue-500 text-2xl mb-2" />
               <h3 className="text-lg font-semibold">{post}</h3>
             </div>
@@ -73,35 +100,40 @@ export default function Voting() {
       {selectedPost && (
         <div className="container mx-auto px-4 py-6">
           <h2 className="text-2xl font-bold mb-4 text-center">Candidates for {selectedPost}</h2>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold mb-2">Candidates:</h3>
-            {candidates.length > 0 ? (
-              candidates.map((candidate, index) => (
-                <div key={index} className="border-b py-2">
-                  <h4 className="font-semibold">{candidate.name}</h4>
-                  <p>{candidate.description}</p>
-                </div>
-              ))
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {candidates.filter(candidate => candidate.position === selectedPost).length > 0 ? (
+              candidates
+                .filter(candidate => candidate.position === selectedPost)
+                .map((candidate, index) => (
+                  <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img 
+                      src={candidate.image} 
+                      alt={candidate.name} 
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="text-xl font-semibold mb-2">{candidate.name}</h3>
+                      <p className="text-gray-600 mb-1">{candidate.department} - Year {candidate.collegeYear}</p>
+                      <p className="text-gray-700 mt-2">{candidate.description}</p>
+                      <button 
+                        className={`mt-4 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition 
+                          ${hasVoted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => handleVote(candidate)}
+                        disabled={hasVoted}
+                      >
+                        {votedCandidate === candidate.name ? 'Voted' : 'Vote'}
+                      </button>
+                    </div>
+                  </div>
+                ))
             ) : (
-              <p className="text-center text-gray-600">No candidates available for this post.</p>
-            )}
-          </div>
-          <hr className="my-4" />
-          <h3 className="text-lg font-bold text-center">Other Candidates</h3>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            {candidates.length > 0 ? (
-              candidates.map((candidate, index) => (
-                <div key={index} className="border-b py-2">
-                  <h4 className="font-semibold">{candidate.name}</h4>
-                  <p>{candidate.description}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-600">No other candidates available.</p>
+              <div className="col-span-full text-center text-gray-600 py-8">
+                No candidates available for this post.
+              </div>
             )}
           </div>
         </div>
       )}
     </div>
   );
-} 
+}

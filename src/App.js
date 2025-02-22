@@ -19,6 +19,7 @@ import Positions from './components/Positions';
 import ViewComplaint from './components/ViewComplaint';
 import ViewProfile from './components/ViewProfile';
 import ManageCandidates from './components/ManageCandidates';
+import FacilityRequest from './components/FacilityRequest';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Create and export the UserContext
@@ -46,6 +47,7 @@ function App() {
         <Route path="/admin/election" element={<AdminElection />} />
         <Route path="/admin/election/positions" element={<Positions />} />
         <Route path="/admin/manage-candidates" element={<ManageCandidates />} />
+        <Route path="/admin/facility-booking-request" element={<FacilityRequest />} />
         <Route path="/doctor-dashboard" element={<DoctorDash />} />
         <Route path="/doctor-dashboard/add-patient" element={<HealthForm />} />
         <Route path="/doctor-dashboard/view-patients" element={<ViewPatients />} />

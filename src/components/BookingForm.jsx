@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -29,15 +29,34 @@ export default function BookingForm() {
     date: ''
   });
 
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [requests, setRequests] = useState([]);
+  const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
 
-  const toggleNotificationPanel = () => {
-    setIsNotificationOpen(prev => !prev);
-  };
+  useEffect(() => {
+    // Fetch existing requests from local storage
+    const fetchRequests = () => {
+      const existingRequests = JSON.parse(localStorage.getItem('facilityRequests') || '[]');
+      setRequests(existingRequests);
+    };
+
+    fetchRequests();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    const newRequest = {
+      name: formData.leaderName,
+      facility: formData.facility,
+      date: formData.date,
+      status: 'pending' // Default status
+    };
+
+    const existingRequests = JSON.parse(localStorage.getItem('facilityRequests') || '[]');
+    existingRequests.push(newRequest);
+    localStorage.setItem('facilityRequests', JSON.stringify(existingRequests));
+
+    alert('Your booking request has been submitted successfully!');
+    e.target.reset();
   };
 
   const handleChange = (e) => {
@@ -45,6 +64,10 @@ export default function BookingForm() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const toggleStatusPanel = () => {
+    setIsStatusPanelOpen(prev => !prev);
   };
 
   return (
@@ -69,14 +92,7 @@ export default function BookingForm() {
               <div className="relative">
                 <NotificationsIcon 
                   className="text-black text-xl cursor-pointer hover:text-blue-600 transition-colors" 
-                  onClick={toggleNotificationPanel} 
                 />
-                {isNotificationOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-4">
-                    <h3 className="font-bold">Notifications</h3>
-                    <p>No new notifications</p>
-                  </div>
-                )}
               </div>
               <ProfileMenu />
             </div>
@@ -230,6 +246,47 @@ export default function BookingForm() {
           </div>
         </div>
       </div>
+
+      {/* View Status Button */}
+      <div className="mt-4">
+        <button
+          onClick={toggleStatusPanel}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200 ease-in-out"
+        >
+          View Status
+        </button>
+      </div>
+
+      {/* Existing Requests Popup Panel */}
+      {isStatusPanelOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg w-11/12 md:w-1/2">
+            <h3 className="text-center text-xl font-semibold">Existing Requests</h3>
+            <div className="overflow-x-auto mt-4">
+              <ul className="mt-4">
+                {requests.length > 0 ? (
+                  requests.map((request, index) => (
+                    <li key={index} className="flex justify-between items-center p-2 border-b">
+                      <span>{request.name} - {request.facility} - {request.date}</span>
+                      <span className={`font-bold ${request.status === 'approved' ? 'bg-green-200 text-green-800' : request.status === 'rejected' ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800'} rounded-full px-2 py-1`}>
+                        {request.status || 'pending'}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-center py-4">No requests available</li>
+                )}
+              </ul>
+            </div>
+            <button
+              onClick={toggleStatusPanel}
+              className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded transition duration-200 ease-in-out"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

@@ -47,9 +47,7 @@ export default function ManageCandidates() {
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center gap-2 text-gray-600">
-          <Link to="/admin/dashboard" className="hover:text-blue-500">Admin Dashboard</Link>
-          <span>/</span>
-          <Link to="/admin/election" className="hover:text-blue-500">Election Management</Link>
+          <Link to="/dashboard" className="hover:text-blue-500">Home</Link>
           <span>/</span>
           <span className="text-black">Manage Candidates</span>
         </div>
@@ -63,7 +61,7 @@ export default function ManageCandidates() {
               <div key={index} className="border-b py-2 flex justify-between items-center">
                 <div>
                   <h4 className="font-semibold">{cand.name}</h4>
-                  <p className="text-gray-600">Post: {cand.post}</p> {/* Display the correct post */}
+                  <p className="text-gray-600">Post: {cand.post}</p>
                 </div>
                 <button 
                   onClick={() => handleDelete(index)} 

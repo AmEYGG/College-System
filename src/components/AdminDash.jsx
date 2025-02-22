@@ -19,7 +19,7 @@ export default function AdminDash() {
   const modules = [
     { title: "Election Management", path: "/admin/election", icon: <HowToVoteIcon />, bgColor: "bg-[#FFE4BA]", iconBg: "bg-[#FF8A00]" },
     { title: "Complaint Review", path: "/admin/view-complaints", icon: <ReportProblemIcon />, bgColor: "bg-[#B8D8BA]", iconBg: "bg-[#4A7B4C]" },
-    { title: "Facility Booking Request", path: "/facility-booking-request", icon: <AssignmentIcon />, bgColor: "bg-[#FFD6D6]", iconBg: "bg-[#FF4D4D]" },
+    { title: "Facility Booking Request", path: "/admin/facility-booking-request", icon: <AssignmentIcon />, bgColor: "bg-[#FFD6D6]", iconBg: "bg-[#FF4D4D]" },
     { title: "Budget & Fund Administration", path: "/budget-admin", icon: <AccountBalanceWalletIcon />, bgColor: "bg-[#D4E6F1]", iconBg: "bg-[#2E86C1]" },
     { title: "Event & Budget Management", path: "/event-management", icon: <EventNoteIcon />, bgColor: "bg-[#E8DAEF]", iconBg: "bg-[#8E44AD]" },
     { title: "Academic Integrity Record", path: "/academic-integrity", icon: <VerifiedUserIcon />, bgColor: "bg-[#FCF3CF]", iconBg: "bg-[#F1C40F]" },

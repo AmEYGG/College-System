@@ -4,36 +4,48 @@ import EmailIcon from '@mui/icons-material/Email';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import axios from 'axios';
 
 export default function Login() {
   const navigate = useNavigate();
   
   // State variables for form fields
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    role: ""
+  });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Reset error state before submitting
+    setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        college_email: formData.email,
+        password: formData.password,
+        role: formData.role
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      // Store auth data
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      
+      // Set default auth header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
 
-      alert("Login successful");
-      navigate("/dashboard");
+      navigate(res.data.dashboardUrl);
     } catch (error) {
-      console.error("Login Error:", error);
-      setError(error.message || "Server error. Please try again later");
+      setError(error.response?.data?.message || "Login failed");
     }
   };
 
@@ -58,8 +70,9 @@ export default function Login() {
             <div className="relative group">
               <input 
                 type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+                name="email"
+                value={formData.email} 
+                onChange={handleChange} 
                 required
                 placeholder="Email"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
@@ -71,8 +84,9 @@ export default function Login() {
             <div className="relative group">
               <input 
                 type={showPassword ? 'text' : 'password'}
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+                name="password"
+                value={formData.password} 
+                onChange={handleChange} 
                 required
                 placeholder="Password"
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl placeholder-black/70 focus:border-[#FF8A00] transition-colors"
@@ -88,8 +102,9 @@ export default function Login() {
             {/* Select Option field */}
             <div className="relative group">
               <select 
-                value={role} 
-                onChange={(e) => setRole(e.target.value)} 
+                name="role"
+                value={formData.role} 
+                onChange={handleChange} 
                 required
                 className="w-full py-3 bg-transparent border-b-2 border-gray-400 focus:outline-none text-xl text-black/70 appearance-none cursor-pointer focus:border-[#FF8A00] transition-colors"
               >
@@ -102,25 +117,13 @@ export default function Login() {
               <ArrowDropDownIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black/70 text-2xl pointer-events-none" />
             </div>
 
+            {/* Submit Button */}
+            <button type="submit" className="w-full bg-[#FF8A00] text-white py-3 rounded-lg hover:bg-[#FF8A00]/80 transition-colors">
+              Login
+            </button>
+
             {/* Error Message */}
-            {error && <p className="text-red-600 text-center">{error}</p>}
-
-            {/* Forgot Password */}
-            <div className="text-right">
-              <a href="/forgot-password" className="text-black/70 text-lg hover:text-[#FF8A00] transition-colors">
-                Forgot Password?
-              </a>
-            </div>
-
-            {/* Login Button */}
-            <div className="flex justify-center pt-4">
-              <button 
-                type="submit"
-                className="bg-[#FF8A00] text-white px-16 py-3 rounded-full text-xl transform hover:scale-105 hover:shadow-lg transition-all duration-300 active:scale-95"
-              >
-                Login
-              </button>
-            </div>
+            {error && <p className="text-red-500 text-center">{error}</p>}
           </form>
         </div>
       </div>
