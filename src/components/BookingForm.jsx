@@ -1,73 +1,101 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SchoolIcon from '@mui/icons-material/School';
-import BusinessIcon from '@mui/icons-material/Business';
-import PersonIcon from '@mui/icons-material/Person';
-import PhoneIcon from '@mui/icons-material/Phone';
-import DescriptionIcon from '@mui/icons-material/Description';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import ProfileMenu from './common/ProfileMenu';
 
+const FACILITIES = ['Auditorium', 'Seminar Hall', 'Sports Ground', 'Conference Room'];
+
 export default function BookingForm() {
-  const facilities = [
-    { value: 'ground', label: 'Sports Ground' },
-    { value: 'classroom', label: 'Classroom' },
-    { value: 'auditorium', label: 'Auditorium' },
-    { value: 'lab', label: 'Computer Lab' },
-    { value: 'seminar', label: 'Seminar Hall' }
-  ];
-
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    organization: '',
+    organizationName: '',
     leaderName: '',
-    contactNo: '',
+    contactNumber: '',
     facility: '',
-    reason: '',
-    date: ''
+    bookingReason: '',
+    bookingDate: ''
   });
-
-  const [requests, setRequests] = useState([]);
-  const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // Fetch existing requests from local storage
-    const fetchRequests = () => {
-      const existingRequests = JSON.parse(localStorage.getItem('facilityRequests') || '[]');
-      setRequests(existingRequests);
-    };
-
-    fetchRequests();
-  }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newRequest = {
-      name: formData.leaderName,
-      facility: formData.facility,
-      date: formData.date,
-      status: 'pending' // Default status
-    };
-
-    const existingRequests = JSON.parse(localStorage.getItem('facilityRequests') || '[]');
-    existingRequests.push(newRequest);
-    localStorage.setItem('facilityRequests', JSON.stringify(existingRequests));
-
-    alert('Your booking request has been submitted successfully!');
-    e.target.reset();
-  };
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        leaderName: user.full_name || ''
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    if (name === 'leaderName') return; // Prevent changing leader name
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const toggleStatusPanel = () => {
-    setIsStatusPanelOpen(prev => !prev);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Please login to book a facility');
+      }
+
+      const response = await fetch('/api/facilities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          organizationName: formData.organizationName,
+          leaderName: formData.leaderName,
+          contactNumber: formData.contactNumber,
+          facility: formData.facility,
+          bookingReason: formData.bookingReason,
+          bookingDate: formData.bookingDate
+        })
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        console.error('Response status:', response.status);
+        console.error('Response data:', data);
+        throw new Error(data?.message || `Failed to submit booking: ${response.statusText}`);
+      }
+
+      if (!data) {
+        throw new Error('Invalid server response');
+      }
+
+      setSuccess(true);
+      setFormData({
+        organizationName: '',
+        leaderName: user?.full_name || '',
+        contactNumber: '',
+        facility: '',
+        bookingReason: '',
+        bookingDate: ''
+      });
+    } catch (err) {
+      console.error('Booking error:', err);
+      setError(err.message || 'Failed to submit booking request');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -121,172 +149,134 @@ export default function BookingForm() {
 
           {/* Form Content */}
           <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Organization Input */}
-              <div className="relative group">
-                <BusinessIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xl" />
-                <input
-                  type="text"
-                  name="organization"
-                  placeholder="Organization Name"
-                  value={formData.organization}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
-                    focus:outline-none focus:border-blue-500 transition-colors
-                    hover:border-blue-400 text-gray-700"
-                  required
-                />
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                Booking request submitted successfully! You will receive a confirmation email once approved.
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Organization Name
+                  </label>
+                  <input
+                    type="text"
+                    name="organizationName"
+                    value={formData.organizationName}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Leader Name
+                  </label>
+                  <input
+                    type="text"
+                    name="leaderName"
+                    value={formData.leaderName}
+                    readOnly
+                    className="w-full border border-gray-300 rounded-md p-2 bg-gray-50 cursor-not-allowed"
+                  />
+                </div>
               </div>
 
-              {/* Leader Name Input */}
-              <div className="relative group">
-                <PersonIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xl" />
-                <input
-                  type="text"
-                  name="leaderName"
-                  placeholder="Leader Name"
-                  value={formData.leaderName}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
-                    focus:outline-none focus:border-blue-500 transition-colors
-                    hover:border-blue-400 text-gray-700"
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="contactNumber"
+                    value={formData.contactNumber}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Facility
+                  </label>
+                  <select
+                    name="facility"
+                    value={formData.facility}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select a facility</option>
+                    {FACILITIES.map(facility => (
+                      <option key={facility} value={facility}>{facility}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              {/* Contact Number Input */}
-              <div className="relative group">
-                <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xl" />
-                <input
-                  type="tel"
-                  name="contactNo"
-                  placeholder="Contact Number"
-                  value={formData.contactNo}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
-                    focus:outline-none focus:border-blue-500 transition-colors
-                    hover:border-blue-400 text-gray-700"
-                  required
-                />
-              </div>
-
-              {/* Facility Selection */}
-              <div className="relative group">
-                <MeetingRoomIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xl" />
-                <select
-                  name="facility"
-                  value={formData.facility}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
-                    focus:outline-none focus:border-blue-500 transition-colors
-                    hover:border-blue-400 text-gray-700 appearance-none cursor-pointer"
-                  required
-                >
-                  <option value="">Select Facility</option>
-                  {facilities.map(facility => (
-                    <option key={facility.value} value={facility.value}>
-                      {facility.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Reason Input */}
-              <div className="relative group">
-                <DescriptionIcon className="absolute left-3 top-4 text-blue-600 text-xl" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reason for Booking
+                </label>
                 <textarea
-                  name="reason"
-                  placeholder="Reason for Booking"
-                  value={formData.reason}
+                  name="bookingReason"
+                  value={formData.bookingReason}
                   onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
-                    focus:outline-none focus:border-blue-500 transition-colors
-                    hover:border-blue-400 text-gray-700 resize-none h-32"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows="4"
                   required
                 />
               </div>
 
-              {/* Date Selection */}
-              <div className="relative group">
-                <CalendarTodayIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xl" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Booking Date
+                </label>
                 <input
                   type="date"
-                  name="date"
-                  value={formData.date}
+                  name="bookingDate"
+                  value={formData.bookingDate}
                   onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl
-                    focus:outline-none focus:border-blue-500 transition-colors
-                    hover:border-blue-400 text-gray-700"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
 
-              {/* Submit Button */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl text-lg font-semibold
-                    hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5 transition-all duration-150
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
-                    shadow-lg hover:shadow-xl active:shadow-md"
-                >
-                  Submit Booking
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {loading ? 'Submitting...' : 'Submit Booking Request'}
+              </button>
             </form>
 
-            {/* Additional Information */}
-            <div className="mt-6 text-center space-y-2">
-              <div className="bg-blue-50 rounded-xl p-4 text-sm text-blue-600">
-                <p className="font-medium">Important Note:</p>
-                <p>Please ensure all details are correct before submission.</p>
-                <p>You will receive a confirmation email once approved.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* View Status Button */}
-      <div className="mt-4">
-        <button
-          onClick={toggleStatusPanel}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200 ease-in-out"
-        >
-          View Status
-        </button>
-      </div>
-
-      {/* Existing Requests Popup Panel */}
-      {isStatusPanelOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg w-11/12 md:w-1/2">
-            <h3 className="text-center text-xl font-semibold">Existing Requests</h3>
-            <div className="overflow-x-auto mt-4">
-              <ul className="mt-4">
-                {requests.length > 0 ? (
-                  requests.map((request, index) => (
-                    <li key={index} className="flex justify-between items-center p-2 border-b">
-                      <span>{request.name} - {request.facility} - {request.date}</span>
-                      <span className={`font-bold ${request.status === 'approved' ? 'bg-green-200 text-green-800' : request.status === 'rejected' ? 'bg-red-200 text-red-800' : 'bg-yellow-200 text-yellow-800'} rounded-full px-2 py-1`}>
-                        {request.status || 'pending'}
-                      </span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-center py-4">No requests available</li>
-                )}
+            <div className="mt-8 p-4 bg-blue-50 rounded-md">
+              <h3 className="font-semibold text-blue-800 mb-2">Important Notes:</h3>
+              <ul className="list-disc pl-5 text-sm text-blue-700 space-y-1">
+                <li>Please verify all details before submission</li>
+                <li>You will receive a confirmation email after approval</li>
+                <li>Booking is subject to facility availability</li>
+                <li>Cancellations must be made at least 24 hours in advance</li>
               </ul>
             </div>
-            <button
-              onClick={toggleStatusPanel}
-              className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded transition duration-200 ease-in-out"
-            >
-              Close
-            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
-} 
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SchoolIcon from '@mui/icons-material/School';
@@ -38,28 +39,22 @@ export default function ComplaintInfo() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newComplaint = {
-      complaintType: formData.complaintType,
-      subject: formData.subject,
-      description: formData.description,
-      status: 'pending', // Default status
-    };
-
-    // Save to localStorage
-    const existingComplaints = JSON.parse(localStorage.getItem('complaints') || '[]');
-    localStorage.setItem('complaints', JSON.stringify([...existingComplaints, newComplaint]));
-
-    // Show success message
-    toast.success('Complaint filed successfully!');
-    setFormData({
-      complaintType: '',
-      subject: '',
-      description: '',
-      anonymous: true,
-      priority: 'medium'
-    });
+    try {
+      const response = await axios.post('http://localhost:5000/api/complaints', formData);
+      toast.success('Complaint filed successfully!');
+      setFormData({
+        complaintType: '',
+        subject: '',
+        description: '',
+        anonymous: true,
+        priority: 'medium'
+      });
+      setComplaints([...complaints, response.data]);
+    } catch (error) {
+      toast.error('Failed to file complaint');
+    }
   };
 
   const toggleNotificationPanel = () => {
@@ -71,17 +66,23 @@ export default function ComplaintInfo() {
   };
 
   useEffect(() => {
-    const storedComplaints = JSON.parse(localStorage.getItem('complaints') || '[]');
-    setComplaints(storedComplaints);
+    const fetchComplaints = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/complaints');
+        setComplaints(response.data);
+      } catch (error) {
+        console.error('Failed to fetch complaints', error);
+      }
+    };
+    fetchComplaints();
   }, []);
 
-  React.useEffect(() => {
-    const complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
-    const lastComplaint = complaints[complaints.length - 1];
-    if (lastComplaint) {
+  useEffect(() => {
+    if (complaints.length > 0) {
+      const lastComplaint = complaints[complaints.length - 1];
       setMessage(`The complaint has been ${lastComplaint.status}.`);
     }
-  }, []);
+  }, [complaints]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 flex flex-col">
@@ -282,4 +283,4 @@ export default function ComplaintInfo() {
       </div>
     </div>
   );
-} 
+}

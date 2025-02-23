@@ -86,4 +86,4 @@ router.get("/check-user/:email", async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

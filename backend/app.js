@@ -3,7 +3,6 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const errorHandler = require('./middlewares/errorHandler');
-const path = require("path");
 const connectDB = require('./config/db');
 const User = require('./models/User');
 const candidateRoutes = require('./routes/candidateRoutes');
@@ -12,17 +11,41 @@ const electionRoutes = require("./routes/electionRoutes");
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const facilityRoutes = require('./routes/facilityRoutes');
 
 const app = express();
 
 // Middleware
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Body parsing middleware - make sure these come before routes
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+
+// Add this error handling for JSON parsing
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid JSON format'
+    });
+  }
+  next();
+});
 
 // Connect to Database
 connectDB();
 
-// Routes
+// Add this line to serve uploaded files
+app.use('/uploads', express.static('uploads'));
+
+// Mount routes - make sure facilityRoutes is mounted before error handlers
+app.use('/api/facilities', facilityRoutes);
 app.use("/api/candidates", electionRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", dashboardRoutes);
@@ -69,7 +92,15 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, "SECRET_KEY", { expiresIn: "1h" });
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role,
+        full_name: user.full_name 
+      }, 
+      "SECRET_KEY", 
+      { expiresIn: "1h" }
+    );
 
     // Determine dashboard URL based on role
     let dashboardUrl;
@@ -92,8 +123,9 @@ app.post("/login", async (req, res) => {
 
     console.log("✅ Login Successful for:", userEmail);
     res.json({ 
+      success: true,
       message: "Login successful", 
-      token,
+      token: token,
       user: {
         full_name: user.full_name,
         college_email: user.college_email,
@@ -106,8 +138,11 @@ app.post("/login", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Server Error:", error);
-    res.status(500).json({ message: "Server error. Please try again later.", error });
+    console.error("Login Error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error during login" 
+    });
   }
 });
 
@@ -171,16 +206,49 @@ app.get("/test-users", async (req, res) => {
   }
 });
 app.use('/api/candidates', candidateRoutes);
-app.use(errorHandler);
 
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-}).on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use`);
-  } else {
-    console.error('❌ Server error:', err);
+// Add this after all routes are registered
+app._router.stack.forEach(function(r){
+  if (r.route && r.route.path){
+    console.log(`Route registered: ${Object.keys(r.route.methods)} ${r.route.path}`);
   }
+});
+
+// General error handler - place this after all routes
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal server error'
+  });
+});
+
+const findAvailablePort = async (startPort) => {
+  const tryPort = async (currentPort) => {
+    try {
+      await new Promise((resolve, reject) => {
+        const server = app.listen(currentPort, () => {
+          server.close();
+          resolve();
+        });
+        server.on('error', reject);
+      });
+      return currentPort;
+    } catch (err) {
+      if (err.code === 'EADDRINUSE') {
+        return tryPort(currentPort + 1);
+      }
+      throw err;
+    }
+  };
+  return tryPort(startPort);
+};
+
+// Start server with dynamic port
+findAvailablePort(5000).then(port => {
+  app.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+  });
+}).catch(err => {
+  console.error('❌ Server error:', err);
 });

@@ -9,9 +9,12 @@ axios.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // Forbidden access
+      alert('You do not have permission to access this resource.');
     }
     return Promise.reject(error);
   }
 );
 
-export default axios; 
+export default axios;

@@ -29,4 +29,4 @@ const seedDatabase = async () => {
   process.exit();
 };
 
-seedDatabase(); 
+seedDatabase();

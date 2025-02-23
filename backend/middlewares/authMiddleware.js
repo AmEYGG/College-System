@@ -1,29 +1,60 @@
 const jwt = require("jsonwebtoken");
 
-const authMiddleware = (allowedRoles) => {
+const authMiddleware = (roles = []) => {
   return (req, res, next) => {
     try {
-      const token = req.header("Authorization")?.replace("Bearer ", "");
-      
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader) {
+        return res.status(401).json({
+          success: false,
+          message: 'No authorization header found'
+        });
+      }
+
+      const token = authHeader.split(' ')[1];
       if (!token) {
-        return res.status(401).json({ message: "No token, authorization denied" });
+        return res.status(401).json({
+          success: false,
+          message: 'No token provided'
+        });
       }
 
       const decoded = jwt.verify(token, "SECRET_KEY");
       
-      // Convert roles to proper case for comparison
-      const normalizedAllowedRoles = allowedRoles.map(role => 
-        role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
-      );
+      if (!decoded || !decoded.id) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token format'
+        });
+      }
 
-      if (!normalizedAllowedRoles.includes(decoded.role)) {
-        return res.status(403).json({ message: "Access denied" });
+      if (roles.length && !roles.includes(decoded.role)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized access'
+        });
       }
 
       req.user = decoded;
       next();
     } catch (error) {
-      res.status(401).json({ message: "Token is not valid" });
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token'
+        });
+      }
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token expired'
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        message: 'Authentication error'
+      });
     }
   };
 };
